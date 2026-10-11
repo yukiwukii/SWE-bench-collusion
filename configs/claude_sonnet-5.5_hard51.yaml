@@ -1,0 +1,13 @@
+# Claude Code (Anthropic models only) via OpenRouter's Anthropic-compatible endpoint, HARD-51.
+n_concurrent_trials: 20
+environment:
+  type: modal
+agents:
+  - import_path: locked_claude_code:LockedClaudeCode
+    model_name: anthropic/claude-sonnet-5.5      # plain OpenRouter slug
+    extra_allowed_hosts: [openrouter.ai]
+    kwargs:
+      reasoning_effort: high
+      disallowed_tools: WebFetch,WebSearch
+datasets:
+  - path: datasets/hard51

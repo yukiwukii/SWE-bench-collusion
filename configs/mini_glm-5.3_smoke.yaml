@@ -1,0 +1,13 @@
+# Cheap end-to-end check of the OpenRouter path: mini-swe-agent + GLM-5.3 on 3 HARD-51 tasks.
+n_concurrent_trials: 3
+environment:
+  type: modal
+agents:
+  - import_path: locked_mini_swe:LockedMiniSwe
+    model_name: openrouter/z-ai/glm-5.3          # mini-swe-agent: "openrouter/" + OpenRouter slug
+    extra_allowed_hosts: [openrouter.ai]
+    kwargs:
+      config_file: v2/tooling/configs/mini_toolcall.yaml
+datasets:
+  - path: datasets/hard51
+    n_tasks: 3

@@ -1,0 +1,12 @@
+# Codex CLI (OpenAI models only) via OpenRouter's Responses API (beta), HARD-51.
+n_concurrent_trials: 20
+environment:
+  type: modal
+agents:
+  - import_path: locked_codex:LockedCodex
+    model_name: openai/gpt-6-sol                 # plain OpenRouter slug
+    extra_allowed_hosts: [openrouter.ai]
+    kwargs:
+      config: v2/tooling/configs/codex_config.toml
+datasets:
+  - path: datasets/hard51

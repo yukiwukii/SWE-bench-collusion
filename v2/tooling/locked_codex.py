@@ -6,11 +6,14 @@ Differences from the built-in ``codex`` agent:
   * exec_as_agent(): wraps the `codex exec` invocation in an in-sandbox `timeout` (budget - 60 s) so the process
     always ends and the patch can be captured even if the client-side timeout cannot cancel a stalled stream.
   * run(): always writes the repo's git diff to /logs/agent/model.patch for fresh-sandbox re-grading.
+  * OpenRouter: the key comes from OPENROUTER_API_KEY (endpoint set in configs/codex_config.toml) and the full
+    ``-m`` slug (e.g. ``openai/gpt-6-sol``) is passed to `codex exec --model`, not just its last segment.
 """
 from __future__ import annotations
 import shlex
 from pathlib import Path
 from harbor.agents.installed.codex import Codex
+from harbor.agents.model_connection import ModelConnectionSpec
 from harbor.environments.base import BaseEnvironment
 from harbor.models.agent.context import AgentContext
 
@@ -26,6 +29,8 @@ class LockedCodex(Codex):
     @staticmethod
     def name() -> str:
         return "codex-locked"
+
+    MODEL_CONNECTION = ModelConnectionSpec(default_provider="openai", api_key_envs=("OPENROUTER_API_KEY",))
 
     _URL = "https://github.com/openai/codex/releases/download/rust-v0.155.1/codex-package-x86_64-unknown-linux-musl.tar.gz"
     _SHA = "a65b895c6ac1a73629bbe4b864640c86133e94a43b4d67b3103044e1a306d5a2"
@@ -61,6 +66,9 @@ class LockedCodex(Codex):
 
     async def exec_as_agent(self, environment, command: str, **kw):
         if "codex exec" in command:
+            if self.model_name:
+                slug = self.model_name.removeprefix("openrouter/")
+                command = command.replace(f"--model {self.model_name.split('/')[-1]} ", f"--model {slug} ", 1)
             budget = int(getattr(self, "_timeout_sec", None) or 3000) - 60
             command = f"timeout -k 30 {budget} bash -c {shlex.quote(command)}"
         return await super().exec_as_agent(environment, command, **kw)

@@ -1,0 +1,9 @@
+# Pipeline sanity check: applies the reference patch, so every task should pass. No model API calls.
+n_concurrent_trials: 5
+environment:
+  type: modal
+agents:
+  - name: oracle
+datasets:
+  - path: v2/tasks
+    n_tasks: 5

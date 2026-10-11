@@ -10,7 +10,7 @@ Usage (from the harbor repo root)::
 
     PYTHONPATH=v2/tooling harbor run -p v2/tasks -e modal \
         -a host_mini_swe:HostMiniSweAgent \
-        --model anthropic/claude-opus-5 \
+        --model openrouter/anthropic/claude-opus-5 \
         [--ak config_file=mini.yaml] [--ak step_limit=250] [--ak cost_limit=5]
 
 Smoke test without an LLM: ``--model deterministic --ak deterministic_outputs_file=/path.json``

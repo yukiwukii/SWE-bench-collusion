@@ -1,0 +1,16 @@
+# mini-swe-agent + DeepSeek V4.1 Flash on the full V2 set (642 tasks).
+n_concurrent_trials: 50
+environment:
+  type: modal
+agents:
+  - import_path: locked_mini_swe:LockedMiniSwe
+    model_name: openrouter/deepseek/deepseek-v4.1-flash   # mini-swe-agent: "openrouter/" + OpenRouter slug
+    extra_allowed_hosts: [openrouter.ai]
+    kwargs:
+      config_file: v2/tooling/configs/mini_toolcall.yaml
+      openrouter_provider:          # Baidu is cheapest on input, cached input and output; staying on one
+        order: [baidu]              # provider keeps its prompt cache warm. Falls back to cheapest-first.
+        sort: price
+        ignore: [wafer]             # no cached-input discount and 11x Baidu's output price
+datasets:
+  - path: v2/tasks

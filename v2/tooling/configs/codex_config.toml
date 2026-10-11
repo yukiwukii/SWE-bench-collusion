@@ -1,10 +1,10 @@
-# Codex CLI configuration used by the locked protocol runs (GPT-6 Astra).
-# Point base_url at any OpenAI-compatible endpoint that serves the Responses API; the API key comes from OPENAI_API_KEY.
-model_provider = "endpoint"
+# Codex CLI configuration used by the locked protocol runs, routed through OpenRouter's Responses API.
+# locked_codex.py reads the key from OPENROUTER_API_KEY and hands it to Codex as OPENAI_API_KEY inside the sandbox.
+model_provider = "openrouter"
 model_reasoning_effort = "high"
 web_search = "disabled"
-[model_providers.endpoint]
-name = "OpenAI-compatible endpoint"
-base_url = "https://<YOUR_OPENAI_COMPATIBLE_ENDPOINT>/v1"
+[model_providers.openrouter]
+name = "OpenRouter"
+base_url = "https://openrouter.ai/api/v1"
 env_key = "OPENAI_API_KEY"
 wire_api = "responses"

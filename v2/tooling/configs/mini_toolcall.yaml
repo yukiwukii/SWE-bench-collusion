@@ -7,7 +7,7 @@ agent:
     \ to get a better understanding of the codebase.\n\n[Makes bash tool call with {\"command\": \"ls -la\"} as arguments]\n</example_response>\n\n<system_information>\n{{system}} {{release}} {{version}} {{machine}}\n</system_information>\n\n## Useful command examples\n\n### Create a new file:\n\n```bash\ncat <<'EOF' > newfile.py\nimport numpy as np\nhello = \"world\"\nprint(hello)\nEOF\n```\n\n### Edit files with sed:\n\n{%- if system == \"Darwin\" -%}\n<important>\nYou are on MacOS. For all the below examples, you need to use `sed -i ''` instead of `sed -i`.\n</important>\n{%- endif -%}\n\n```bash\n# Replace all occurrences\nsed -i 's/old_string/new_string/g' filename.py\n\n# Replace only first occurrence\nsed -i 's/old_string/new_string/' filename.py\n\n# Replace first occurrence on line 1\nsed -i '1s/old_string/new_string/' filename.py\n\n# Replace all occurrences in lines 1-10\nsed -i '1,10s/old_string/new_string/g' filename.py\n```\n\n### View file content:\n\n```bash\n# View specific\
     \ lines with numbers\nnl -ba filename.py | sed -n '10,20p'\n```\n\n### Any other command you want to run\n\n```bash\nanything\n```\n"
   step_limit: 0
-  cost_limit: 3.0
+  cost_limit: 1.0
   mode: confirm
 environment:
   env:
@@ -49,4 +49,8 @@ model:
   model_kwargs:
     drop_params: true
     reasoning_effort: high
-  model_class: litellm
+    extra_body:
+      provider:
+        sort: price  # OpenRouter: cheapest provider first, falling back to the next on errors
+  # stock litellm model, but each call is charged at OpenRouter's billed usage.cost (keeps cost_limit exact)
+  model_class: sbp_openrouter_model.OpenRouterCostLitellmModel

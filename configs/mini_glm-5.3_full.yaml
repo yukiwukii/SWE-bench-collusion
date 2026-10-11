@@ -1,0 +1,12 @@
+# mini-swe-agent on the full V2 set (642 tasks).
+n_concurrent_trials: 50
+environment:
+  type: modal
+agents:
+  - import_path: locked_mini_swe:LockedMiniSwe
+    model_name: openrouter/z-ai/glm-5.3          # mini-swe-agent: "openrouter/" + OpenRouter slug
+    extra_allowed_hosts: [openrouter.ai]
+    kwargs:
+      config_file: v2/tooling/configs/mini_toolcall.yaml
+datasets:
+  - path: v2/tasks

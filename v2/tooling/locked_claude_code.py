@@ -3,12 +3,20 @@
 Identical to the built-in ``claude-code`` agent, except that after the run it writes the
 agent's git diff to ``/logs/agent/model.patch`` (persisted to ``jobs/<job>/<trial>/agent/``)
 so ``patch_replay:PatchReplayAgent`` can re-grade it on a pristine image.
+
+Routed through OpenRouter's Anthropic-compatible endpoint: the key comes from ``OPENROUTER_API_KEY`` and
+``-m`` takes an OpenRouter slug (e.g. ``anthropic/claude-sonnet-5.5``). Set ``ANTHROPIC_BASE_URL`` to override.
 """
 from __future__ import annotations
 
+from dataclasses import replace
+
 from harbor.agents.installed.claude_code import ClaudeCode
+from harbor.agents.model_connection import ModelConnectionSpec, ResolvedModelConnection
 from harbor.environments.base import BaseEnvironment
 from harbor.models.agent.context import AgentContext
+
+_OPENROUTER_ANTHROPIC_URL = "https://openrouter.ai/api"
 
 _CAPTURE = (
     "mkdir -p /logs/agent; "
@@ -22,6 +30,29 @@ class LockedClaudeCode(ClaudeCode):
     @staticmethod
     def name() -> str:
         return "claude-code-locked"
+
+    MODEL_CONNECTION = ModelConnectionSpec(
+        default_provider="anthropic",
+        api_key_envs=("OPENROUTER_API_KEY",),
+        base_url_envs=("ANTHROPIC_BASE_URL",),
+    )
+
+    @property
+    def model_connection(self) -> ResolvedModelConnection:
+        # A configured base URL also makes upstream pass the full slug through as ANTHROPIC_MODEL.
+        access = super().model_connection
+        if access.configured_base_url:
+            return access
+        return replace(access, base_url=_OPENROUTER_ANTHROPIC_URL, configured_base_url=_OPENROUTER_ANTHROPIC_URL)
+
+    def _resolve_auth_env(self) -> dict[str, str]:
+        """OpenRouter expects the key as a bearer token (ANTHROPIC_AUTH_TOKEN), with ANTHROPIC_API_KEY blank."""
+        env = super()._resolve_auth_env()
+        key = env.pop("ANTHROPIC_API_KEY", None)
+        if key:
+            env["ANTHROPIC_AUTH_TOKEN"] = key
+        env["ANTHROPIC_API_KEY"] = ""
+        return env
 
     async def install(self, environment: BaseEnvironment) -> None:
         """Upstream installs nodejs+npm via apt, which fails (exit 100) on the Debian-bullseye

@@ -1,191 +1,129 @@
-## SWE-Bench Pro
+# SWE-bench-collusion
 
-Code and data for the following works:
-* <a href="https://static.scale.com/uploads/654197dc94d34f66c0f5184e/SWEAP_Eval_Scale%20(9).pdf">SWE-bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?</a>
+An experiment harness built on [SWE-bench Pro](https://github.com/scaleapi/SWE-bench_Pro-os) (V2, 642 tasks), set up so
+that every model call goes through [OpenRouter](https://openrouter.ai) and every experiment is a config file whose
+results, per-task cost and prompt-cache statistics are saved under its own name. The planned experiment is described in
+[`docs/experiment_design.md`](docs/experiment_design.md).
 
-* HuggingFace: <a href="https://huggingface.co/datasets/ScaleAI/SWE-bench_Pro">https://huggingface.co/datasets/ScaleAI/SWE-bench_Pro</a>
+Forked from `scaleapi/SWE-bench_Pro-os` at commit
+[`66f9276`](https://github.com/scaleapi/SWE-bench_Pro-os/commit/66f92766bba642462d4bbe5479e83f91f9211862)
+(release v2.0.0, 2026-09-22). The original README is kept as [`README.upstream.md`](README.upstream.md); the
+benchmark data, task directories, verifiers and v1 pipeline are unchanged.
 
-* Public Leaderboard: <a href="https://scale.com/leaderboard/swe_bench_pro_public">https://scale.com/leaderboard/swe_bench_pro_public</a>
+## Quick start
 
-* Commercial (Private) Leaderboard: <a href="https://labs.scale.com/leaderboard/swe_bench_pro_private">https://labs.scale.com/leaderboard/swe_bench_pro_private</a>
-
-## News
-
-(9/22) **SWE-Bench Pro V2 released.** 642 validated tasks in Harbor format under [`v2/`](v2/), the HARD-51 subset, and the locked-protocol tooling (offline agent phase, fresh-sandbox re-grading). The HuggingFace `default` config is now V2; v1 is kept as config `v1` / tag `v1.0`. See [`v2/README.md`](v2/README.md).
-
-(05/18) We have identified some issues with the leaderboard and are currently working on addressing them. 
-
-(2/9) We have removed some unit tests which were outdated (e.g. required the year 2025) or were previously not intended to be included. 
-
-(1/7) We have fixed an issue with tutao instances where they take a long time to eval. The relevant run scripts are updated.
-
-(10/28) We added mini-swe-agent! Results are comparable to SWE-Agent for Sonnet 4.5. Feel free to give it a shot. (credit @miguelrc-scale)
-
-(10/28) We have the SWE-Agent scaffold to reproduce results and a step-by-step guide below. We have confirmed that this reproduces the Sonnet 4.5 results. (credit @18vijayb)
-
-(10/3) We have updated results without cap limit here: https://scaleapi.github.io/SWE-bench_Pro-os/
-
-## Overview
-SWE-Bench Pro is a challenging benchmark evaluating LLMs/Agents on long-horizon software engineering tasks.
-Given a *codebase* and an *issue*, a language model is tasked with generating a *patch* that resolves the described problem.
-
-The dataset is inspired from SWE-Bench: https://github.com/SWE-bench/SWE-bench
-
-To access SWE-bench Pro, copy and run the following code:
-```python
-from datasets import load_dataset
-swebench = load_dataset('ScaleAI/SWE-bench_Pro', split='test')
-```
-
-## SWE-Bench Pro V2
-
-V2 is the validated public split: **642 tasks across 11 repositories**, each shipped as a self-contained
-[Harbor](https://github.com/laude-institute/harbor) task directory under [`v2/tasks/`](v2/tasks/) with its verifier,
-reference solution and a public container image (`ghcr.io/scaleapi/swe-bench_pro-v2:<instance_id>`), plus the
-**HARD-51** subset ([`v2/hard51_ids.txt`](v2/hard51_ids.txt)) and the locked-protocol tooling ([`v2/tooling/`](v2/tooling/)).
-Full instructions: [`v2/README.md`](v2/README.md).
-
-```python
-from datasets import load_dataset
-v2   = load_dataset('ScaleAI/SWE-bench_Pro', split='test')            # V2, 642 tasks (default config)
-hard = load_dataset('ScaleAI/SWE-bench_Pro', 'hard', split='test')    # HARD-51
-v1   = load_dataset('ScaleAI/SWE-bench_Pro', 'v1', split='test')      # original 731 tasks
-```
+Requirements: [uv](https://docs.astral.sh/uv/), a [Modal](https://modal.com) account (task images are linux/amd64, so
+sandboxes run on Modal rather than local Docker), and an OpenRouter API key.
 
 ```bash
-harbor run -p v2/tasks -e modal -n 50 -a oracle        # reference patch resolves 642/642
+uv tool install 'harbor[modal]>=0.22'
+uv tool install 'modal>=1.5.1'
+modal setup
+
+echo 'OPENROUTER_API_KEY=sk-or-...' > .env                                # gitignored
+python3 v2/tooling/make_subset.py v2/tasks v2/hard51_ids.txt datasets/hard51  # HARD-51 subset (gitignored)
+
+./run_experiment.sh configs/oracle_smoke.yaml                    # pipeline check, no API cost: expect 5/5
+./run_experiment.sh configs/mini_deepseek-v4.1-flash_smoke.yaml  # 3 tasks with the default model
 ```
 
-Everything below this section (`swe_bench_pro_eval.py`, `run_scripts/`, `dockerfiles/`, the Docker Hub images) is the
-**v1 pipeline**, kept for reproducing v1 numbers with the `v1` config.
+## Changes from the original repository
 
-## Installation
+### 1. All model traffic goes through OpenRouter
 
-### 1. Install Python Dependencies
+Upstream's locked-protocol agents call Anthropic directly (Claude Code), a placeholder OpenAI-compatible endpoint
+(Codex) or any LiteLLM provider (mini-swe-agent). Here all three read `OPENROUTER_API_KEY` and take OpenRouter model
+slugs; the agent sandbox may reach only `openrouter.ai`.
 
-```bash
-pip install -r requirements.txt
-```
+| File | Change |
+|---|---|
+| `v2/tooling/locked_claude_code.py` | Uses OpenRouter's Anthropic-compatible endpoint (`ANTHROPIC_BASE_URL=https://openrouter.ai/api`, key sent as `ANTHROPIC_AUTH_TOKEN`). `-m` takes a slug such as `anthropic/claude-sonnet-5.5`. |
+| `v2/tooling/locked_codex.py`, `v2/tooling/configs/codex_config.toml` | Codex points at OpenRouter's Responses API (beta). The key comes from `OPENROUTER_API_KEY`, and the full slug (`openai/gpt-6-sol`) is passed to `codex exec --model` instead of only its last segment. |
+| `v2/tooling/locked_mini_swe.py` | mini-swe-agent uses `openrouter/<slug>` model names (LiteLLM's OpenRouter provider). |
+| `v2/tooling/host_mini_swe.py` | Usage example updated to an OpenRouter model name. |
 
-### 2. Install Docker
+### 2. Config-driven experiments with results saved per config
 
-SWE-bench Pro uses Docker for reproducible evaluations.
+| File | Purpose |
+|---|---|
+| `configs/*.yaml` | One Harbor job config per experiment (agent, model, task set, concurrency). See [`configs/README.md`](configs/README.md). |
+| `run_experiment.sh` | `./run_experiment.sh configs/<name>.yaml` runs the agent phase, re-grades every captured patch on a pristine image (`patch_replay:PatchReplayAgent`), and writes everything to `results/<name>/`. Re-running a config resumes an unfinished run; a changed config is refused rather than mixed into old results. |
+| `helper_code/summarize_results.py` | Writes `summary.json`, `per_task.csv` and `calls.csv`, and prints the per-task table and totals. |
 
-Follow the instructions in the [Docker setup guide](https://docs.docker.com/engine/install/) to install Docker on your machine.
-If you're setting up on Linux, we recommend seeing the [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/) as well.
+Included configs: `oracle_smoke`, `mini_deepseek-v4.1-flash_{smoke,hard51,full}` (default model),
+`mini_glm-5.3_{smoke,hard51,full}`, `claude_sonnet-5.5_hard51`, `codex_gpt-6-sol_hard51`.
 
-### 3. Configure Modal (Recommended) (or use local docker [Beta])
+Layout of `results/<name>/` (gitignored):
 
-```bash
-modal setup  # Follow the prompts to generate your token
-```
+| File | Contents |
+|---|---|
+| `summary.json` | resolved counts (agent phase and re-graded), total cost, cache totals |
+| `per_task.csv` | per task: rewards, cost and its source, token counts, cache hit/miss tokens and hit rate |
+| `calls.csv` | one row per LLM call: provider, prompt / cache-hit / cache-miss / cache-write / output tokens, cost |
+| `cost_log.json` | OpenRouter key usage before and after each run |
+| `pricing.json` | the model's OpenRouter list prices when the experiment started |
+| `config.yaml` | snapshot of the config |
+| `agent/`, `regrade/` | Harbor job directories; `regrade/` is the score to report |
 
-After running, verify your credentials in `~/.modal.toml`:
-```
-token_id = <token id>
-token_secret = <token secret>
-active = true
-```
+### 3. Cost accounting
 
-Beta: Local Docker. No additional setup needed. Use the `--use_local_docker` flag when running evaluations.
+- **Per task:** the sum of OpenRouter's billed `usage.cost` over the task's calls (mini-swe-agent keeps raw responses
+  in its trajectory). Where no per-call cost exists (Claude Code, Codex), tokens times the model's OpenRouter list
+  price, labelled as an estimate.
+- **Per experiment:** `helper_code/openrouter_ledger.py` snapshots the key's total usage before and after each run, so
+  the total billed is exact. It includes any other use of the same key during the run. Interrupted runs still close
+  their entry, and the ledger waits for OpenRouter's usage counter to settle.
+- `run_experiment.sh` prints the key's remaining budget before each run and refuses to start when the limit is reached.
+- `v2/tooling/openrouter_pricing.py`: shared helpers for OpenRouter prices and key usage (standard library only).
 
-## Docker Images
+### 4. Prompt-cache logging
 
-**V2:** every task's image is public on GitHub Container Registry and referenced by the `docker_image` column
-(`ghcr.io/scaleapi/swe-bench_pro-v2:<instance_id>`); `docker pull` needs no login.
+Per call (`calls.csv`), per task and per experiment: cache-hit tokens, cache-miss tokens, cache-write tokens, hit rate,
+calls with a cache hit, and a per-provider breakdown. Claude Code and Codex runs use the per-step token counts in
+Harbor's trajectory instead.
 
-**v1 (legacy):** we provide prebuilt Docker images for each v1 instance on Docker Hub:
+### 5. Provider routing and a working cost cap for mini-swe-agent
 
-**Repository:** https://hub.docker.com/r/jefzda/sweap-images
+| Change | Why |
+|---|---|
+| `v2/tooling/configs/mini_toolcall.yaml`: `provider: {sort: price}` | OpenRouter tries the cheapest provider first. Prices for the same open model vary by up to ~70x across providers. |
+| Per-experiment `openrouter_provider` kwarg (in `locked_mini_swe.py`) | Overrides the routing per config. The DeepSeek configs use `{order: [baidu], sort: price, ignore: [wafer]}`: Baidu is cheapest on every price, and staying on one provider keeps its prompt cache warm. |
+| `v2/tooling/sandbox/sbp_openrouter_model.py` + `model_class` in `mini_toolcall.yaml` | Stock LiteLLM model, but each call is charged at OpenRouter's billed cost. LiteLLM has no prices for most OpenRouter models, so mini-swe-agent counted every call as $0. |
+| `cost_limit: 1.0` (was 3.0) and no `--cost-limit 0` flag | Harbor's mini-swe-agent wrapper always passed `--cost-limit 0`, which overrides the config file and disables the cap. The wrapper now omits the flag unless a config sets `cost_limit`. |
+| OpenRouter prices registered with LiteLLM | Fallback for responses without a billed cost. |
 
-### Finding the Correct Image
+### 6. Fix: mini-swe-agent crashing in the offline sandbox
 
-Each instance in the HuggingFace dataset has a `dockerhub_tag` column containing the Docker tag for that instance. You can access it directly:
+The agent sandbox has no network apart from the model endpoint. LiteLLM 1.105 tries to download its model price map
+at import time, and its background retry crashed mini-swe-agent with a circular import
+(`cannot import name 'LoggerContext' from partially initialized module 'litellm.rust_bridge.catalog'`).
+`locked_mini_swe.py` sets `LITELLM_LOCAL_MODEL_COST_MAP=True` for every command in the sandbox.
 
-```python
-from datasets import load_dataset
+### 7. Other
 
-dataset = load_dataset('ScaleAI/SWE-bench_Pro', split='test')
+- `.gitignore`: adds `jobs/`, `datasets/` and `results/`.
+- `docs/experiment_design.md`: design for the planned experiment.
+- `v2/SHA256SUMS` was not regenerated: `cd v2 && shasum -a 256 -c SHA256SUMS` reports the six edited tooling files
+  (`codex_config.toml`, `mini_toolcall.yaml`, `host_mini_swe.py`, `locked_claude_code.py`, `locked_codex.py`,
+  `locked_mini_swe.py`) as changed. All task files still verify.
 
-# Get the Docker image for a specific instance
-for row in dataset:
-    instance_id = row['instance_id']
-    docker_tag = row['dockerhub_tag']
-    full_image = f"jefzda/sweap-images:{docker_tag}"
-    print(f"{instance_id} -> {full_image}")
-```
+## Results so far
 
-**Important:** Bash runs by default in our images. When running these images, you should not manually invoke bash. See https://github.com/scaleapi/SWE-bench_Pro-os/issues/6
+| Experiment | Resolved (re-graded) | Total cost | Notes |
+|---|---|---|---|
+| `oracle_smoke` | 5/5 | $0 | reference patches |
+| `mini_glm-5.3_smoke` | 3/3 | $1.28 | $0.26-$0.64 per task, 98.6% cache hit rate, all calls on one provider |
 
-## Usage
+DeepSeek V4.1 Flash is estimated at about $0.014 per task on its cheapest provider (from the GLM run's token counts);
+not yet measured on a full task.
 
-### 1. Generate Patches
-Generate patch predictions using your harness of choice. 
+## Known limitations
 
-For generating patches using SWE-agent, see the [SWE-agent git submodule](./SWE-agent/) (note: you will have to use this as a git submodule. See [official git documentation](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for details). The submodule contains detailed instructions to
-- Set up SWE-agent for patch generation
-- Run SWE-agent on SWE-Bench Pro instances
-- Configure model parameters and turn limits
+- Codex through OpenRouter's Responses API (beta) has not been run end to end.
+- Claude Code should be used with Anthropic models only.
+- The re-grade step can be skipped only for `oracle` and `nop` agents.
 
-The output will be `.pred` files containing model-generated patches for each instance.
+## License and citation
 
-### 2. Gather Patches
-After generating patches, use the `gather_patches.py` helper script to collect all patches into a single JSON file for evaluation:
-
-```bash
-python helper_code/gather_patches.py \
-    --directory <path_to_pred_files> \
-    --prefix <model_name> \
-    --output <output_file>.json
-```
-
-**Parameters:**
-- `--directory`: Directory containing instance folders with `.pred` files (e.g., from SWE-agent output or downloaded trajectories)
-- `--prefix`: Prefix identifier for your model/run (e.g., "gpt4", "claude-sonnet", "sample1")
-- `--output`: Output JSON file path
-
-**Example:**
-```bash
-python helper_code/gather_patches.py \
-    --directory swe_bench_pro_results/sample1 \
-    --prefix sample1 \
-    --output sample1_patches.json
-```
-
-This will create a JSON file in the format expected by the evaluation script:
-```json
-[
-  {
-    "instance_id": "instance_...",
-    "patch": "diff --git ...",
-    "prefix": "sample1"
-  }
-]
-```
-
-### 3. Evaluate Patches
-
-Evaluate patch predictions on SWE-Bench Pro:
-
-```bash
-python swe_bench_pro_eval.py \
-    --raw_sample_path=swe_bench_pro_full.csv \
-    --patch_path=<your_patches>.json \
-    --output_dir=<output_directory> \
-    --scripts_dir=run_scripts \
-    --num_workers=100 \
-    --dockerhub_username=jefzda
-```
-
-You can test with the gold patches, which are in the HuggingFace dataset. There is a helper script in `helper_code` which can extract the gold patches into the required JSON format.
-
-## Reproducing Leaderboard Results
-
-To reproduce leaderboard results end-to-end, follow the following steps:
-
-1. Complete setup in the `SWE-agent` submodule. We recommend to use the Docker image to run the scaffold, via `just`.
-2. Run the scaffold. We have included an example for Claude Sonnet 4.5 (claude.yaml) but feel free to use any model. It also supports `vllm` for local models. Note that we recommend using the DockerHub images rather than building the Docker images from scratch. You can also execute it locally without Modal.
-3. Compile predictions with helper_code/gather_patches.py.
-4. Run the evaluation script `swe_bench_pro_eval.py` to run the evaluation script.
-
-
+MIT, as upstream (see [`LICENSE`](LICENSE)). Benchmark: Deng et al., *SWE-Bench Pro: Can AI Agents Solve Long-Horizon
+Software Engineering Tasks?* (arXiv:2509.16941); see [`README.upstream.md`](README.upstream.md) for the full citation.
