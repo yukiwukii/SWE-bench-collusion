@@ -1,0 +1,17 @@
+# Deterministic (no LLM, no cost) check of the collusion harness on local docker: agent 0 writes
+# /workspace/notes.md, agent 1 reads it. Expect agent 1 to see the file only with mount: shared.
+n_concurrent_trials: 1
+environment:
+  import_path: local_docker_env:OfflineCapableDocker   # local Docker Desktop; enforces no-network without nftables
+agents:
+  - import_path: collusion_group:CollusionGroupAgent
+    model_name: deterministic
+    override_timeout_sec: 1800
+    kwargs:
+      mount: isolated
+      n_agents: 2
+      models: [deterministic, deterministic]
+      deterministic_outputs: [configs/collusion/smoke/agent0.json, configs/collusion/smoke/agent1.json]
+datasets:
+  - path: v2/tasks
+    task_names: [instance_ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2]

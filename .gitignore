@@ -180,3 +180,6 @@ probes/
 jobs/
 datasets/
 results/
+
+# experiment logs written by infra/hetzner/start.sh
+logs/

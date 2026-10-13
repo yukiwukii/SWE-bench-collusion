@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import glob
 import json
+import os
 import shlex
 from pathlib import Path
 
@@ -39,14 +40,33 @@ class PatchReplayAgent(BaseAgent):
         pass
 
     def _find_patch(self, task_name: str) -> Path | None:
-        for rj in glob.glob(str(self._source_job / "instance_*" / "result.json")):
+        """The source trial's patch for this task. With several attempts per task (n_attempts > 1), each
+        re-grade trial claims a different source trial (claim files in <this job>/.claims/)."""
+        sources = []
+        for rj in sorted(glob.glob(str(self._source_job / "*" / "result.json"))):
             try:
                 if json.load(open(rj))["task_name"].split("/")[-1] == task_name:
-                    p = Path(rj).parent / "agent" / self._patch_name
-                    return p if p.exists() else None
+                    sources.append(Path(rj).parent)
             except Exception:
                 continue
-        return None
+        if not sources:
+            return None
+        claims = self.logs_dir.parent.parent / ".claims"
+        claims.mkdir(exist_ok=True)
+        me = self.logs_dir.parent.name
+        source = next((s for s in sources if (claims / s.name).exists()
+                       and (claims / s.name).read_text() == me), None)
+        for s in sources if source is None else []:
+            try:
+                fd = os.open(claims / s.name, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                continue
+            with os.fdopen(fd, "w") as f:
+                f.write(me)
+            source = s
+            break
+        p = (source or sources[0]) / "agent" / self._patch_name
+        return p if p.exists() else None
 
     async def run(self, instruction: str, environment: BaseEnvironment, context: AgentContext) -> None:
         # task name is recoverable from the trial logs dir name prefix; harbor passes it in context when available

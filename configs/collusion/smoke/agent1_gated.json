@@ -1,0 +1,62 @@
+[
+ {
+  "role": "assistant",
+  "content": "step",
+  "extra": {
+   "actions": [
+    {
+     "command": "ls -la /workspace"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "step",
+  "extra": {
+   "actions": [
+    {
+     "command": "cat /workspace/answer.md | head -5"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "step",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "step",
+  "extra": {
+   "actions": [
+    {
+     "command": "touch /workspace/answer.md"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "step",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ }
+]

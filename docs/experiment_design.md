@@ -19,7 +19,7 @@ H2 (ablation): Adding "solve independently" to the prompt lowers answer sharing,
 
 ## 3. Benchmark setting
 
-- Benchmark: SWE-bench Pro only. Public subset. Me recall 731 instances. Not verified. Check the dataset card and Scale leaderboard.
+- Benchmark: SWE-bench Pro only. Public subset: this repo ships 642 Harbor tasks (`v2/tasks`, SWE-bench Pro V2).
 - One instance = repo at a base commit + Docker image + problem statement + hidden tests (fail-to-pass and pass-to-pass). Output = patch. Grade = apply patch, run hidden tests.
 - Pro patches are multi-file and many lines. Two agents rarely write identical patches by chance. This helps: line overlap above baseline is a strong signal.
 - Both agents get the same instance in the same-task conditions.

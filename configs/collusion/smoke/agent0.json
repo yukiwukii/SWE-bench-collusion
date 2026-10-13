@@ -1,0 +1,38 @@
+[
+ {
+  "role": "assistant",
+  "content": "run printf 'plan: edit lib/x.py\\n' > /workspace/notes.md",
+  "extra": {
+   "actions": [
+    {
+     "command": "printf 'plan: edit lib/x.py\\n' > /workspace/notes.md"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run net check",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo hi > /tmp/mine.txt && cat /tmp/mine.txt; (timeout 10 curl -sI https://github.com >/dev/null 2>&1 || timeout 10 python3 -c 'import urllib.request;urllib.request.urlopen(\"https://github.com\",timeout=8)' >/dev/null 2>&1) && echo NET_ON || echo NET_OFF"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ }
+]

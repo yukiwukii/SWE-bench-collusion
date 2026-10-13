@@ -41,9 +41,12 @@ def llm_calls(agent_dir):
     """One dict per LLM call: from mini-swe-agent's trajectory (raw OpenRouter responses, exact cost),
     else from harbor's ATIF trajectory.json (Claude Code, Codex)."""
     calls = []
-    traj = read_json(agent_dir / "mini-swe-agent.trajectory.json")
-    if traj:
-        for m in traj.get("messages", []):
+    trajs = [read_json(agent_dir / "mini-swe-agent.trajectory.json")]
+    # collusion_group trials: one trajectory per agent of the group (agent_<i>/); the task's cost is their sum
+    trajs += [read_json(p) for p in sorted(agent_dir.glob("agent_*/mini-swe-agent.trajectory.json"))]
+    trajs = [t for t in trajs if t]
+    if trajs:
+        for m in (m for t in trajs for m in t.get("messages", [])):
             r = (m.get("extra") or {}).get("response")
             if not isinstance(r, dict):
                 continue
@@ -181,11 +184,16 @@ def main(out):
     call_log = []
     agent = load_trials(out / "agent", pricing, call_log)
     regrade = load_trials(out / "regrade") if (out / "regrade").is_dir() else {}
+    # collusion_group experiments: one re-grade job per agent of the group (regrade_a0, regrade_a1, ...)
+    by_agent = {d.name.removeprefix("regrade_"): load_trials(d) for d in sorted(out.glob("regrade_a*")) if d.is_dir()}
 
     summary = {"experiment": out.name, "agent_phase": score(agent)}
     if regrade:
         summary["regrade"] = score(regrade)
-    summary["headline"] = summary["regrade" if regrade else "agent_phase"]
+    if by_agent:
+        summary["regrade_by_agent"] = {a: score(t) for a, t in by_agent.items()}
+        summary["regrade"] = score({f"{task}#{a}": r for a, t in by_agent.items() for task, r in t.items()})
+    summary["headline"] = summary["regrade" if (regrade or by_agent) else "agent_phase"]
     if pricing_file:
         summary["cost"] = cost_summary(out, agent)
         summary["cache"] = cache_summary(agent, call_log)
@@ -196,11 +204,12 @@ def main(out):
             "cache_write_tokens", "cache_hit_rate", "calls_with_cache_hit"]
     with open(out / "per_task.csv", "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["task", "agent_reward", "regrade_reward", "agent_error", "regrade_error", *cols])
+        w.writerow(["task", "agent_reward", "regrade_reward", "agent_error", "regrade_error",
+                    *(f"regrade_reward_{a}" for a in by_agent), *cols])
         for task in sorted(set(agent) | set(regrade)):
             a, g = agent.get(task, {}), regrade.get(task, {})
             w.writerow([task, a.get("reward"), g.get("reward"), a.get("error"), g.get("error"),
-                        *(a.get(c) for c in cols)])
+                        *(t.get(task, {}).get("reward") for t in by_agent.values()), *(a.get(c) for c in cols)])
     if call_log:
         with open(out / "calls.csv", "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=CALL_COLS, extrasaction="ignore")
@@ -220,7 +229,7 @@ def main(out):
                   f" {rate:>8} {hits:>9} {res if res is not None else '-':>8}")
     h = summary["headline"]
     print(f"\n{out.name}: {h['resolved']}/{h['n_trials']} resolved"
-          f" ({'re-graded' if regrade else 'agent phase'}), errors={h['errors']}")
+          f" ({'re-graded' if regrade or by_agent else 'agent phase'}), errors={h['errors']}")
     if pricing_file:
         c, k = summary["cost"], summary["cache"]
         fmt = lambda v: f"${v:.4f}" if v is not None else "n/a"  # noqa: E731

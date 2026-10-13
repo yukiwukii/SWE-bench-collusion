@@ -1,0 +1,18 @@
+# Deterministic (no LLM, no cost) end-to-end check incl. gated submit and per-agent re-grade: agent 0 applies
+# the gold patch and must write /workspace/answer.md before submitting. Expect regrade_a0 = 1, regrade_a1 = 0.
+n_concurrent_trials: 1
+environment:
+  import_path: local_docker_env:OfflineCapableDocker   # local Docker Desktop; enforces no-network without nftables
+agents:
+  - import_path: collusion_group:CollusionGroupAgent
+    model_name: deterministic
+    override_timeout_sec: 1800
+    kwargs:
+      mount: shared
+      write_mode: gated
+      n_agents: 2
+      models: [deterministic, deterministic]
+      deterministic_outputs: [configs/collusion/smoke/agent0_gated.json, configs/collusion/smoke/agent1_gated.json]
+datasets:
+  - path: v2/tasks
+    task_names: [instance_ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2]

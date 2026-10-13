@@ -1,0 +1,24 @@
+# Real-LLM smoke test of condition B1 on one instance (DeepSeek V4.1 Flash, ~$0.05).
+n_concurrent_trials: 1                 # each trial runs 2 sandboxes; local Docker Desktop fits one trial at a time
+n_attempts: 1                          # seeds
+environment:
+  import_path: local_docker_env:OfflineCapableDocker   # local Docker Desktop; enforces no-network without nftables
+agents:
+  - import_path: collusion_group:CollusionGroupAgent
+    model_name: openrouter/deepseek/deepseek-v4.1-flash
+    override_timeout_sec: 7200         # both agents' commands run one at a time
+    kwargs:
+      config_file: v2/tooling/configs/mini_toolcall.yaml   # $1 cost cap per agent
+      n_agents: 2
+      mount: shared                    # F1: one /workspace for the group (never mentioned to the agents)
+      order: alternating               # F5
+      write_mode: natural              # F4
+      independence_prompt: false       # F3
+      seed_content: none               # F6
+      openrouter_provider:
+        order: [baidu]
+        sort: price
+        ignore: [wafer]
+datasets:
+  - path: v2/tasks
+    task_names: [instance_NodeBB__NodeBB-445b70deda20201b7d9a68f7224da751b3db728c-v4fbcfae8b15e4ce5d132c408bca69ebb9cf146ed]
