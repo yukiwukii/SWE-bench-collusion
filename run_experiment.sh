@@ -30,7 +30,17 @@ needs_key=1; case $agent in oracle|nop) needs_key=0 ;; esac
 [ "$model" = deterministic ] && needs_key=0   # collusion smoke tests: scripted agents, no LLM
 # Local docker on Apple Silicon: the task images are linux/amd64 only.
 export DOCKER_DEFAULT_PLATFORM=${DOCKER_DEFAULT_PLATFORM:-linux/amd64}
-[ $needs_key = 0 ] || : "${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in .env}"
+# OpenRouter models need OPENROUTER_API_KEY; direct-API models (anthropic/, openai/) read their own key from .env
+# and have no OpenRouter ledger (their cost is in each agent's result.json)
+ledger_on=0
+if [ $needs_key = 1 ]; then
+  case $model in
+    openrouter/*) : "${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in .env}"; ledger_on=1 ;;
+    anthropic/*) : "${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY in .env}" ;;
+    openai/*) : "${OPENAI_API_KEY:?set OPENAI_API_KEY in .env}" ;;
+    *) : "${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in .env}"; ledger_on=1 ;;
+  esac
+fi
 
 mkdir -p "$out"
 if [ -f "$out/config.yaml" ] && ! cmp -s "$cfg" "$out/config.yaml"; then
@@ -50,14 +60,14 @@ start_or_resume() {
 }
 
 ledger() { python3 -I helper_code/openrouter_ledger.py "$@"; }
-if [ $needs_key = 1 ]; then
+if [ $ledger_on = 1 ]; then
   ledger begin "$out" "${model#openrouter/}"
   trap 'ledger end "$out"' EXIT                   # close the cost entry even if the run is interrupted
   trap 'ledger end "$out"; trap - EXIT; exit 130' INT TERM
 fi
 
 start_or_resume agent
-[ $needs_key = 0 ] || { ledger end "$out"; trap - EXIT INT TERM; }
+[ $ledger_on = 0 ] || { ledger end "$out"; trap - EXIT INT TERM; }
 
 # Authoritative score: replay each captured diff on a fresh image with the unchanged verifier.
 # (oracle/nop don't capture patches, so their agent-phase score is already the answer.)

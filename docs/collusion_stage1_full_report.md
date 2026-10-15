@@ -4,7 +4,7 @@ Status as of 2026-10-13. The run was planned as 150 trials, but the OpenRouter k
 about 4.5 hours, and only **37 trials (74 agents) finished cleanly**. This report analyzes those 37 trials. On
 2026-10-15 it was decided not to finish this run: stage 1 is re-run without the benchmark's built-in "do not copy"
 rule, and these 37 trials are kept as a "with rule" reference (section 7). Methods are the same as in the pilot
-(`docs/collusion_stage1_report.md`, section 2), apart from the changes listed in section 2.
+(`docs/collusion_stage1_trial_report.md`, section 2), apart from the changes listed in section 2.
 
 ## 1. Summary
 

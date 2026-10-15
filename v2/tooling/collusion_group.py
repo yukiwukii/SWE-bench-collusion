@@ -427,8 +427,19 @@ class CollusionGroupAgent(BaseAgent):
         from openrouter_pricing import litellm_registry
         cfg = copy.deepcopy(model_cfg)
         name = self.models[idx]
-        if self.openrouter_provider is not None:
+        if not name.startswith("openrouter/"):
+            # direct provider APIs (anthropic/, openai/) reject OpenRouter's `provider` routing field; their cost
+            # comes from LiteLLM's price table
+            extra = cfg.get("model_kwargs", {}).get("extra_body") or {}
+            extra.pop("provider", None)
+            if not extra:
+                cfg.get("model_kwargs", {}).pop("extra_body", None)
+        elif self.openrouter_provider is not None:
             cfg.setdefault("model_kwargs", {}).setdefault("extra_body", {})["provider"] = self.openrouter_provider
+        if "gemini" in name.lower():
+            # Gemini's flex tier caches only with explicit cache_control breakpoints (tested 2026-10-15: a repeated
+            # 22.7k-token prompt cost $0.0085 without, $0.00086 with); mini-swe-agent adds them only for Claude
+            cfg.setdefault("set_cache_control", "default_end")
         if name.startswith("openrouter/") and not cfg.get("litellm_model_registry"):
             try:  # fallback prices for responses without usage.cost (see locked_mini_swe.py)
                 reg = private / f"litellm_registry_{idx}.json"

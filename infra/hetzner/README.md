@@ -46,7 +46,7 @@ Then **delete** the server in the console. Hetzner bills stopped servers too.
 
 ## Expected size of `stage1_B1_full` (50 instances x 3 seeds = 150 trials)
 
-From the stage 1 pilot (`docs/collusion_stage1_report.md`): about 24 min per trial including re-grades,
+From the stage 1 pilot (`docs/collusion_stage1_trial_report.md`): about 24 min per trial including re-grades,
 $0.07 OpenRouter cost per trial.
 
 - CPX62, 6 trials at once: about 11-12 h, plus about 1 h to pull 50 images. Server about $3.
