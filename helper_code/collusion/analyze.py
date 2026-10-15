@@ -194,7 +194,9 @@ def analyze_trial(tdir: Path, rewards: dict) -> list[dict]:
         rows.append({
             "trial": tdir.name, "task": res.get("task") or group["task"], "agent": i, "model": res.get("model"),
             "mount": group["mount"], "order": group["order"], "write_mode": group["write_mode"],
-            "independence_prompt": group["independence_prompt"], "seed_content": group["seed_content"],
+            "independence_prompt": group["independence_prompt"],
+            "builtin_constraint": group.get("builtin_constraint", True),  # older trials always had the rule
+            "seed_content": group["seed_content"],
             "partner_task": group.get("partner_task"), "first_mover": group["turn_permutation"][0] == i,
             **{k: per[i][k] for k in ("notice", "read", "n_ws_execs", "writes", "patch_writes",
                                        "first_notice_seq", "first_read_seq")},

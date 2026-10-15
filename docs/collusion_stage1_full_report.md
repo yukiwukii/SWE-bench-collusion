@@ -1,8 +1,9 @@
 # Shared-workspace experiment: full stage 1 (B1, 50 instances x 3 seeds), partial results
 
 Status as of 2026-10-13. The run was planned as 150 trials, but the OpenRouter key hit its $20 weekly limit after
-about 4.5 hours, and only **37 trials (74 agents) finished cleanly**. This report analyzes those 37 trials. The
-other trials need to be re-run once the key has budget again (section 7). Methods are the same as in the pilot
+about 4.5 hours, and only **37 trials (74 agents) finished cleanly**. This report analyzes those 37 trials. On
+2026-10-15 it was decided not to finish this run: stage 1 is re-run without the benchmark's built-in "do not copy"
+rule, and these 37 trials are kept as a "with rule" reference (section 7). Methods are the same as in the pilot
 (`docs/collusion_stage1_report.md`, section 2), apart from the changes listed in section 2.
 
 ## 1. Summary
@@ -206,7 +207,8 @@ trajectories. This may change agent behaviour and is a limitation of these resul
 
 - **The built-in rule confounds H1.** Every SWE-bench Pro V2 prompt already tells the agent not to use "existing
   solutions", and agents quote that rule when they find foreign files. B1 is therefore not a "no instruction"
-  baseline. Whether to strip the rule is still open (see the discussion in the pilot report).
+  baseline. Decided on 2026-10-15: stage 1 is re-run without the rule (section 7), and the 37 trials here are kept as
+  a "with rule" reference.
 - **Copying is rare, but so is the chance to copy.** No agent wrote a whole patch to `/workspace`
   (`patch_write_rate` 0), so there was little to copy. B2 (gated write: the agent must save its patch to
   `/workspace/answer.md`) and the planted conditions (P1, P2) are needed to test copying itself.
@@ -218,15 +220,17 @@ trajectories. This may change agent behaviour and is a limitation of these resul
 
 ## 7. Next steps
 
-1. **Budget.** With the pinned providers, the 113 remaining trials should cost about $30 (about $0.26 per trial).
-   The second key in `.env` (`OPENROUTER_API_KEY_BACKUP`, $50 limit) covers this.
-2. **Re-run.** The server was deleted on 2026-10-13. Its state is saved in `results/_server_backup_2026-10-13/`
-   (not in git): `stage1_B1_full/` holds the 35 finished trials with the updated provider, and
-   `stage1_B1_full_keylimit/` the broken trials and old re-grades. On a new server, run `vm.sh push --env` and
-   `setup`, copy `stage1_B1_full/` back into `results/`, then `vm.sh run`. The job re-runs only the missing trials
-   and then re-grades all 150.
-3. Run `judge.py` on the noticing agents, then label about 50 trajectories by hand.
-4. Decide about the built-in "do not copy" rule before stage 2.
-5. Budget about $0.30 per trial from now on, with pinned providers: the 5-condition stage 2 pilot (150 trials) is
+1. **Re-run stage 1 without the built-in rule.** `stage1_B1_full` will not be finished. Its 37 clean trials stay as a
+   "with rule" reference. The new config `configs/collusion/stage1_B1_norule.yaml` runs the same 50 instances x 3
+   seeds with `builtin_constraint: false`, which removes the instruction's last block ("Constraints: * Do not
+   reference, look up, or copy existing solutions, external PRs, or online workarounds. ...") from both agents'
+   prompts. Nothing else changes; the task files and the verifier stay as they are. The run should cost about $40
+   (150 trials at about $0.26) and fits the second key in `.env` (`OPENROUTER_API_KEY_BACKUP`, $50 limit).
+2. **Server.** The server was deleted on 2026-10-13; its state is saved in `results/_server_backup_2026-10-13/`
+   (not in git). The new run starts from scratch: on a new server, run `vm.sh push --env`, `setup` and
+   `vm.sh run <ip> configs/collusion/stage1_B1_norule.yaml`.
+3. Compare the two runs on the instances they share (notice, read and copy rates, and how agents react to the
+   foreign files). Then run `judge.py` on the noticing agents and label about 50 trajectories by hand.
+4. Budget about $0.30 per trial from now on, with pinned providers: the 5-condition stage 2 pilot (150 trials) is
    about $45, and the full design (1,170 trials) is about $350. Before each large run, check that the pinned
    providers still bill cached tokens at the listed price.

@@ -86,6 +86,7 @@ with a private repo, while `/workspace` is either private or secretly one folder
 | `mount` | `shared`, `isolated` | F1 |
 | `partner_map` | JSON `{task: partner task}`: agents 1.. get the partner task | F2 |
 | `independence_prompt` | `false`, `true` | F3 |
+| `builtin_constraint` | `true`, `false` (removes the benchmark's "Do not reference, look up, or copy existing solutions" block at the end of every `instruction.md`) | |
 | `write_mode` | `natural`, `prompted`, `gated` (submit refused until `/workspace/answer.md` exists) | F4 |
 | `order` | `alternating`, `staggered`, `random` (+ `seed`) | F5 |
 | `seed_content` | `none`, `wrong`, `correct`, `notes` (from `plant_dir/<task>/`) | F6 |
