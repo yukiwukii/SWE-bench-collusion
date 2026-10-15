@@ -137,6 +137,7 @@ class Workspace:
     def __init__(self, files: dict[str, bytes] | None = None):
         self.files: dict[str, bytes] = dict(files or {})
         self.mtimes: dict[str, float] = {p: time.time() for p in self.files}  # kept so `ls -l` shows real times
+        self.modes: dict[str, int] = {}  # permission bits; kept so `chmod +x` survives a sync (default 0o666)
         self.version = 0
 
     def manifest(self) -> dict[str, str]:
@@ -147,7 +148,8 @@ class Workspace:
         with tarfile.open(fileobj=buf, mode="w:gz") as tf:
             for p, b in sorted(self.files.items()):
                 ti = tarfile.TarInfo(p)
-                ti.size, ti.mtime, ti.mode = len(b), int(self.mtimes.get(p, time.time())), 0o666
+                ti.size, ti.mtime = len(b), int(self.mtimes.get(p, time.time()))
+                ti.mode = self.modes.get(p, 0o666)
                 tf.addfile(ti, io.BytesIO(b))
         return buf.getvalue()
 
@@ -231,21 +233,28 @@ class Member:
         """Read the sandbox's /workspace back; log and apply every change, attributed to this agent."""
         out = self.sh(f"mkdir -p {WS} && cd {WS} && find . -type f -print0 | xargs -0 -r sha256sum; "
                       # stat -c, not find -printf: BusyBox images (some navidrome tasks) have no -printf.
-                      # Timestamps are best-effort, so a failure here must not fail the pull.
-                      "echo '--mtimes--'; find . -type f -exec stat -c '%Y %n' {} + 2>/dev/null || true")
+                      # Timestamps and modes are best-effort, so a failure here must not fail the pull.
+                      "echo '--mtimes--'; find . -type f -exec stat -c '%Y %a %n' {} + 2>/dev/null || true")
         hashes, _, times = out.partition("--mtimes--")
-        manifest, mtimes = {}, {}
+        manifest, mtimes, modes = {}, {}, {}
         for line in hashes.splitlines():
             sha, _, path = line.partition("  ")
             if sha and path:
                 manifest[path.removeprefix("./")] = sha
         for line in times.splitlines():
-            t, _, path = line.strip().partition(" ")
+            t, _, rest = line.strip().partition(" ")
+            mode, _, path = rest.partition(" ")
             with contextlib.suppress(ValueError):
                 mtimes[path.removeprefix("./")] = float(t)
+                modes[path.removeprefix("./")] = int(mode, 8) & 0o7777
+        ws = self.workspace
         changed = sorted(p for p, s in manifest.items() if self.known.get(p) != s)
         deleted = sorted(p for p in self.known if p not in manifest)
-        if not changed and not deleted:
+        # chmod alone leaves the content hash unchanged, so compare the executable bits separately
+        chmod = {p: m for p, m in modes.items()
+                 if p in manifest and p not in changed and p in ws.files
+                 and (m & 0o111) != (ws.modes.get(p, 0o666) & 0o111)}
+        if not changed and not deleted and not chmod:
             return
         contents: dict[str, bytes] = {}
         if changed:
@@ -255,19 +264,22 @@ class Member:
                 for m in tf.getmembers():
                     if m.isfile():
                         contents[m.name.removeprefix("./")] = tf.extractfile(m).read()
-        ws = self.workspace
         before = dict(ws.files)
         for p in deleted:
             ws.files.pop(p, None)
             ws.mtimes.pop(p, None)
+            ws.modes.pop(p, None)
         ws.files.update(contents)
         ws.mtimes.update({p: mtimes.get(p, time.time()) for p in contents})
+        ws.modes.update({p: modes[p] for p in contents if p in modes})
+        ws.modes.update(chmod)
         ws.version += 1
         rec = self.group.recorder
+        extra = {"chmod": {p: oct(m) for p, m in chmod.items()}} if chmod else {}
         rec.event(type="workspace", seq=seq, agent=self.idx, workspace=self.ws_id,
                   created={p: {"sha": rec.blob(b), "text": _text(b)} for p, b in contents.items() if p not in before},
                   modified={p: {"sha": rec.blob(b), "text": _text(b)} for p, b in contents.items() if p in before},
-                  deleted=deleted)
+                  deleted=deleted, **extra)
         rec.snapshot(seq, self.ws_id, ws.manifest())
         self.seen_version, self.known = ws.version, ws.manifest()
 
