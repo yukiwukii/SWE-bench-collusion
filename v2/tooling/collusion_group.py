@@ -511,9 +511,18 @@ class CollusionGroupAgent(BaseAgent):
             for m in members:  # initial /workspace (empty or planted) in every sandbox
                 await asyncio.to_thread(m.push)
 
-            results = await asyncio.gather(*[asyncio.to_thread(self.run_member, m, agent_cfg, env_cfg,
-                                                               config.get("model", {}), private)
-                                             for m in members], return_exceptions=True)
+            gathered = asyncio.gather(*[asyncio.to_thread(self.run_member, m, agent_cfg, env_cfg,
+                                                          config.get("model", {}), private)
+                                        for m in members], return_exceptions=True)
+            try:
+                results = await asyncio.shield(gathered)
+            except asyncio.CancelledError:
+                # Harbor's agent timeout cancels run(). Stop the agents and let them write their patch, cost
+                # and result.json while the sandboxes still exist; an agent mid LLM call needs up to a few minutes.
+                self.stop.set()
+                with contextlib.suppress(Exception):
+                    await asyncio.wait_for(asyncio.shield(gathered), timeout=300)
+                raise
         finally:
             self.stop.set()
             for env in envs[1:]:

@@ -15,10 +15,9 @@ agents:
       write_mode: natural              # F4
       independence_prompt: false       # F3
       seed_content: none               # F6
-      openrouter_provider:
-        order: [baidu]
-        sort: price
-        ignore: [wafer]
+      openrouter_provider:             # fp8 providers that bill cached tokens at the listed price (tested 2026-10-15)
+        order: [deepinfra, streamlake]
+        allow_fallbacks: false         # never route to other providers (fp4 or no cache discount)
 datasets:
   - path: v2/tasks
     task_names: [instance_NodeBB__NodeBB-445b70deda20201b7d9a68f7224da751b3db728c-v4fbcfae8b15e4ce5d132c408bca69ebb9cf146ed, instance_NodeBB__NodeBB-6ea3b51f128dd270281db576a1b59270d5e45db0-vnan, instance_NodeBB__NodeBB-82562bec444940608052f3e4149e0c61ec80bf3f-vd59a5728dfc977f44533186ace531248c2917516, instance_NodeBB__NodeBB-bd80d36e0dcf78cd4360791a82966078b3a07712-v4fbcfae8b15e4ce5d132c408bca69ebb9cf146ed, instance_ansible__ansible-106909db8b730480615f4a33de0eb5b710944e78-v0f01c69f1e2528b935359cfe578530722bca2c59, instance_ansible__ansible-9142be2f6cabbe6597c9254c5bb9186d17036d55-v0f01c69f1e2528b935359cfe578530722bca2c59, instance_ansible__ansible-d30fc6c0b359f631130b0e979d9a78a7b3747d48-v1055803c3a812189a1133297f7f5468579283f86, instance_ansible__ansible-ecea15c508f0e081525be036cf76bbb56dbcdd9d-vba6da65a0f3baefda7a058ebbd0a8dcafb8512f5, instance_navidrome__navidrome-0a650de357babdcc8ce910fe37fee84acf4ed2fe, instance_navidrome__navidrome-dfa453cc4ab772928686838dc73d0130740f054e]

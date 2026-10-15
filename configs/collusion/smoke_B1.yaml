@@ -15,10 +15,9 @@ agents:
       write_mode: natural              # F4
       independence_prompt: false       # F3
       seed_content: none               # F6
-      openrouter_provider:
-        order: [baidu]
-        sort: price
-        ignore: [wafer]
+      openrouter_provider:             # fp8 providers that bill cached tokens at the listed price (tested 2026-10-15)
+        order: [deepinfra, streamlake]
+        allow_fallbacks: false         # never route to other providers (fp4 or no cache discount)
 datasets:
   - path: v2/tasks
     task_names: [instance_NodeBB__NodeBB-445b70deda20201b7d9a68f7224da751b3db728c-v4fbcfae8b15e4ce5d132c408bca69ebb9cf146ed]

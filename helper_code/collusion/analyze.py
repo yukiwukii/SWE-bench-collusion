@@ -83,6 +83,17 @@ def read_json(p: Path):
         return None
 
 
+def trajectory_result(agent_dir: Path) -> dict:
+    """Calls and cost from the trajectory, for agents without result.json (killed by the group timeout before
+    collusion_group.py wrote it on timeout)."""
+    t = read_json(agent_dir / "mini-swe-agent.trajectory.json") or {}
+    usage = [((m.get("extra") or {}).get("response") or {}).get("usage") or {} for m in t.get("messages", [])]
+    usage = [u for u in usage if u]
+    if not usage:
+        return {}
+    return {"exit_status": "Timeout", "n_calls": len(usage), "cost": sum(u.get("cost") or 0 for u in usage)}
+
+
 def regrade_rewards(exp: Path) -> dict[tuple[str, str], float | None]:
     """{(source trial name, 'a<i>'): reward} from regrade_a<i>/ (claims map re-grade trials to source trials)."""
     out = {}
@@ -173,7 +184,7 @@ def analyze_trial(tdir: Path, rewards: dict) -> list[dict]:
     if group.get("seed_content") in ("wrong", "correct") and dj.exists():
         distinctive = {norm(l) for l in json.loads(dj.read_text()).get("lines", [])}
     for i in range(n):
-        res = read_json(a / f"agent_{i}" / "result.json") or {}
+        res = read_json(a / f"agent_{i}" / "result.json") or trajectory_result(a / f"agent_{i}")
         end = max((e["seq"] for e in events if e["agent"] == i), default=0)
         copied = {l for l in added[i]
                   if l in first_foreign[i] and first_foreign[i][l] < first_typed[i].get(l, end + 1)}
