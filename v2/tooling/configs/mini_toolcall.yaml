@@ -51,6 +51,7 @@ model:
     reasoning_effort: high
     extra_body:
       provider:
-        sort: price  # OpenRouter: cheapest provider first, falling back to the next on errors
+        sort: price  # only for configs without openrouter_provider; sorts by listed prompt price, which ignores
+                     # cache billing and quantization, so every config in configs/ pins its providers instead
   # stock litellm model, but each call is charged at OpenRouter's billed usage.cost (keeps cost_limit exact)
   model_class: sbp_openrouter_model.OpenRouterCostLitellmModel

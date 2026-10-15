@@ -8,5 +8,8 @@ agents:
     extra_allowed_hosts: [openrouter.ai]
     kwargs:
       config_file: v2/tooling/configs/mini_toolcall.yaml
+      openrouter_provider:          # cheapest billed input and verified billing (tested 2026-10-15): both have a flat
+        order: [wafer, relace]      # input price below every other provider's cached price; quantization not published
+        allow_fallbacks: false
 datasets:
   - path: v2/tasks

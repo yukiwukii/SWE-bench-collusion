@@ -8,9 +8,8 @@ agents:
     extra_allowed_hosts: [openrouter.ai]
     kwargs:
       config_file: v2/tooling/configs/mini_toolcall.yaml
-      openrouter_provider:          # Baidu is cheapest on input, cached input and output; staying on one
-        order: [baidu]              # provider keeps its prompt cache warm. Falls back to cheapest-first.
-        sort: price
-        ignore: [wafer]             # no cached-input discount and 11x Baidu's output price
+      openrouter_provider:          # fp8 providers that bill cached tokens at the listed price (tested 2026-10-15);
+        order: [deepinfra, streamlake]
+        allow_fallbacks: false      # never route elsewhere (fp4 or no cache discount: docs/collusion_stage1_full_report.md §5)
 datasets:
   - path: datasets/hard51
