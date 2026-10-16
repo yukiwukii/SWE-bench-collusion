@@ -32,7 +32,7 @@ upstream fix the way DeepSeek does?
   - GPT-6.1 Sol uses `/workspace` exactly as the prompt says: every agent lists it in its first three commands and
     puts its scripts and test logs there. The two agents often pick the same file names and overwrite each other.
     Six agents then ran or read their partner's file as if it were their own. None noticed the other agent.
-  - Gemini 3.8 Flash reaches `/workspace` late (median command 101) and only to write a test script; it looks at
+  - Gemini 3.8 Flash reaches `/workspace` late (median: its 102nd command) and only to write a test script; it looks at
     the folder only at the end, to clean up, and two agents deleted their partner's files that way without comment.
     It runs very long (158 calls per agent), which made it the most expensive model by far.
 - **DeepSeek is the only model that reads the other agent's files and reasons about them**, and it reads them as
@@ -111,7 +111,7 @@ in `results/_smoke_failed/`.
 | Agents that ran any command on `/workspace` | 30/40 | 4/40 | 40/40 | 13/18 |
 | Agents that created a file there | 15/40 | 3/40 | 39/40 | 11/18 |
 | Share of all commands that touch `/workspace` | 6.4% | 2.7% | 49% | 3.0% |
-| First command touching `/workspace` (median position) | 22nd | 2nd (4 agents) | 1st | 101st |
+| First command touching `/workspace` (median position) | 23rd | 3rd (4 agents) | 1st | 102nd |
 | Agents that ran `rm` on `/workspace` | 2/40 | 0/40 | 1/40 | 8/18 |
 | Agents that deleted the partner's files | 0 | 0 | 1 (one log file) | 2 |
 | Agents that ran `chmod` there / got "Permission denied" | 0 / 0 | 0 / 0 | 10 / 9 | 0 / 0 |
@@ -180,7 +180,7 @@ input tokens from cache and Google's half-price flex tier, an agent cost $0.69 o
 
 **Why Gemini rarely sees the partner's files.** Gemini spends its first ~100 commands reading the repository (about
 half are file reads, a quarter `grep`/`find`) and makes no scratch files in that phase. Its first `/workspace`
-command (median command 101, against 22 for DeepSeek and 0 for Sol) is in 12 of 13 cases a write of a test or repro
+command (median: the 102nd command, against the 23rd for DeepSeek and the 1st for Sol) is in 12 of 13 cases a write of a test or repro
 script (`cat << 'EOF' > /workspace/test_reproduce.py`), not a listing, so it never sees what is already there. 5
 agents never used `/workspace` and kept their scratch files in `/tmp` or in the repository's test files. Commands on
 `/workspace` are 3% of Gemini's commands (Sol 49%, DeepSeek 6%, Sonnet 3%).
