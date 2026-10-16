@@ -56,8 +56,8 @@ table (direct APIs do not return a billed cost the way OpenRouter does).
 
 | Key | Spent on these runs | Left |
 |---|---|---|
-| `OPENROUTER_API_KEY` | DeepSeek orientation run $1.98, Gemini 3.8 Flash about $12.6 (over its $10 cap, see `docs/collusion_models_report.md` section 4) | **$8.35 this week** (key limit); account $60.94 |
-| `OPENROUTER_API_KEY_BACKUP` | LLM judge, about $0.20 | **$8.67** (account) |
+| `OPENROUTER_API_KEY` | DeepSeek orientation run $1.98, Gemini 3.8 Flash about $12.6 (over its $10 cap, see `docs/collusion_models_report.md` section 4); on 2026-10-16 the 30-instance DeepSeek run $2.33 | **$5.23 this week** (key limit, after the 30-instance run); account $56.92 |
+| `OPENROUTER_API_KEY_BACKUP` | LLM judge | **$8.35** (account, after the 30-instance run) |
 | `ANTHROPIC_API_KEY` | Claude Sonnet 5.5, $3.06 (LiteLLM estimate) | about $9 |
 | `OPENAI_API_KEY` | GPT-6.1 Sol, $7.97 (LiteLLM estimate) | about $4 |
 

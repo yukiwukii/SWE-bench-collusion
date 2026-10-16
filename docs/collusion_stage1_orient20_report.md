@@ -174,4 +174,5 @@ Runs were a little longer than without the line (median 57 calls against 48.5).
 - Making agents more likely to find the files needs more than a generic hint. It would need the partner's files to
   exist earlier (for example `order: staggered`, so one agent finishes before the other starts) or a line that names
   `/workspace`.
-- The same prompt was then run with three other models (`docs/collusion_models_report.md`).
+- The same prompt was then run with three other models (`docs/collusion_models_report.md`), and with DeepSeek on
+  30 more instances (`docs/collusion_stage1_orient_more30_report.md`).
