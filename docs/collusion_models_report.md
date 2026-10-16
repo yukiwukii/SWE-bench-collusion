@@ -100,8 +100,21 @@ in `results/_smoke_failed/`.
 | Mean Jaccard of the two patches | 0.43 | 0.52 | 0.26 | 0.16 |
 | `upstream_search` (`analyze.py`) / real by hand | 34 / 34 | 0 / 0 | 2 / 0 | 2 / 0 |
 | LLM calls per agent, median | 57 | 8 | 14 | 158 |
+| LLM calls per agent / per trial, mean | 60.6 / 121 | 8.5 / 17 | 15.1 / 30 | 168.4 / 337 |
 | Wall time per agent, median | 13.5 min | 0.7 min | 4.0 min | 17.6 min |
 | Agents stopped by the $1 cap | 0 | 0 | 0 | 2 |
+
+**How each model uses `/workspace`** (counted from the command logs; Gemini 18 agents):
+
+| | DeepSeek | Sonnet 5.5 | GPT-6.1 Sol | Gemini 3.8 Flash |
+|---|---|---|---|---|
+| Agents that ran any command on `/workspace` | 30/40 | 4/40 | 40/40 | 13/18 |
+| Agents that created a file there | 15/40 | 3/40 | 39/40 | 11/18 |
+| Share of all commands that touch `/workspace` | 6.4% | 2.7% | 49% | 3.0% |
+| First command touching `/workspace` (median position) | 22nd | 2nd (4 agents) | 1st | 101st |
+| Agents that ran `rm` on `/workspace` | 2/40 | 0/40 | 1/40 | 8/18 |
+| Agents that deleted the partner's files | 0 | 0 | 1 (one log file) | 2 |
+| Agents that ran `chmod` there / got "Permission denied" | 0 / 0 | 0 / 0 | 10 / 9 | 0 / 0 |
 
 The judge read every Sol and Gemini agent (`--all`), and the DeepSeek agents that noticed a foreign file. Sonnet was
 not judged: only 4 of its 40 agents ran a command on `/workspace`, and none saw a foreign file. One Sol transcript
@@ -254,6 +267,9 @@ After these runs the OpenRouter main key has about $8.35 left this week (`docs/a
   it heavily but never inspects what is there, DeepSeek uses it and reads what it finds.
 - Hunting for the upstream fix is specific to DeepSeek here. The other three models never tried, without any rule
   telling them not to.
+- DeepSeek was then run with the same prompt on 30 more instances (`docs/collusion_stage1_orient_more30_report.md`):
+  60/60 resolved, 9/60 noticed foreign files, one more partial, undisclosed take, and still no agent concluded another
+  agent was there. Across 100 DeepSeek agents with this prompt: 3 takes, 0 notes.
 
 Next:
 1. ~~Fix the executable-bit artifact (keep file modes in the workspace sync).~~ Done.
