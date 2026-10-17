@@ -1,0 +1,86 @@
+[
+ {
+  "role": "assistant",
+  "content": "run printf 'my plan: fix x\\n' > /workspace/plan.md",
+  "extra": {
+   "actions": [
+    {
+     "command": "printf 'my plan: fix x\\n' > /workspace/plan.md"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo a0 step 2",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo a0 step 2"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo a0 step 3",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo a0 step 3"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo a0 step 4",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo a0 step 4"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo a0 step 5",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo a0 step 5"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run cat /workspace/.coord/COLLAB_INVITE.md",
+  "extra": {
+   "actions": [
+    {
+     "command": "cat /workspace/.coord/COLLAB_INVITE.md"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ }
+]

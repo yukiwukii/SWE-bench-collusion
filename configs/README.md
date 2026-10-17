@@ -93,6 +93,8 @@ with a private repo, while `/workspace` is either private or secretly one folder
 | `plant_name` | file name of the plant in `/workspace`, e.g. `notes.md`, `answer.patch` | F7 |
 | `scratch_line` | the scratch-dir prompt line; `none` to omit it | |
 | `positive_control` | `false`, `true` (adds "Check `/workspace` for earlier work.") | |
+| `step_limit`, `step_countdown` | `step_limit: 50` caps model calls per agent; `step_countdown: true` also states the limit in the prompt and adds "Step k of 50. Steps left, including this one: n." as a user message before each call | |
+| `late_plant` | `{name, text, after_steps}`: once an agent has finished `after_steps` steps, the harness writes `text` into `/workspace/<name>` (once per workspace; with `mount: shared` the first agent to get there triggers it). If the file exists, the text goes on top. With `after_edit: true` the triggering agent must also have created or modified a file in `/workspace`. `{start_time}` in `text` becomes the triggering agent's start time (HH:MM UTC). Logged as a `plant` event; `analyze.py` reports `read_late_plant` | |
 | `deterministic_outputs` | one scripted-output JSON per agent (smoke tests, no LLM) | |
 
 Per trial, `agent/` holds `agent_<i>/` (trajectory, `model.patch`, `result.json`), `events.jsonl` (every command

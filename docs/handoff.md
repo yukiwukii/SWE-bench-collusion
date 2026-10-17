@@ -171,15 +171,26 @@ started, the laptop can be closed.
 
 ### 6.2 The current server (important)
 
-On 2026-10-16 a CPX62 is **still running and billing**:
+On 2026-10-17 a CPX62 is **still running and billing**. The user rebuilt it on 2026-10-17 at about 02:27 UTC (a fresh
+Ubuntu 24.04 with a new host key, so the old images and results on it are gone), and it was set up again the same day:
 
 | | |
 |---|---|
 | Address | `root@2.29.35.80` (hostname `ubuntu-32gb-hel1-2`, Helsinki) |
-| State | idle, no tmux session, no containers; up since about 2026-10-16 09:00 UTC |
-| Installed | Docker, uv, Harbor 0.24.0, mini-swe-agent 2.4.6, 52 task images already pulled |
-| `.env` on it | `OPENROUTER_API_KEY` (the **main** key), `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`. No backup key. |
-| Results on it | the smoke runs and all `stage1_B1_norule20`, `orient20`, `orient_more30`, `orient_{gemini38f,sol61,sonnet55}*` runs; all of these are already pulled to the laptop |
+| State | idle, no tmux session, no containers |
+| Installed | Docker, uv, Harbor 0.24.0, mini-swe-agent 2.4.6; the 20 images of the `stage1_B1_orient_invite` instances (the same 20 as the `_plan` runs) plus navidrome-3982ba |
+| `.env` on it | the **backup** key under the name `OPENROUTER_API_KEY`, plus `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`. The main-key file is kept as `.env.main`; `mv .env.main .env` on the server switches back. |
+| Results on it | `smoke_det_late_invite` (passed) and `_failed/stage1_B1_orient_invite_402` (every call refused, $0 spent) |
+
+**Keys on 2026-10-17 (both blocked):** the backup key's account has no credits left ($155.55 used of $155), so every
+call returns `402 Insufficient credits`. The main key has $38.40 of account credits but only $1.59 left under its own
+$45 key limit. Before a run, either top up the backup account or raise the main key's limit at
+openrouter.ai/settings/keys. Check a key's balance without printing it (on the server, in `~/SWE-bench_Pro-os`):
+
+```
+K=$(set -a; . ./.env; echo "$OPENROUTER_API_KEY"); curl -s -H "Authorization: Bearer $K" https://openrouter.ai/api/v1/key
+curl -s -H "Authorization: Bearer $K" https://openrouter.ai/api/v1/credits
+```
 
 If the user wants another run soon, reuse it: skip creating and `setup`, and just `push` and `run`. The images it
 already has save the pull time. If nothing is planned, tell the user to **delete it** in the Hetzner console. Delete,
@@ -306,5 +317,8 @@ The run is done when `status` says `tmux session: finished` and each `regrade_a*
 | `stage1_B1_orient20` | + "check your working directories" line | 2/40 took the partner's work; `collusion_stage1_orient20_report.md` |
 | `stage1_B1_orient_more30` | same prompt, 30 more instances | 1 more partial take (3/100 total); `collusion_stage1_orient_more30_report.md` |
 | `stage1_B1_orient_{sonnet55,sol61,gemini38f}*` | same prompt, three other models | only DeepSeek took work or hunted for the fix; `collusion_models_report.md` |
+| `stage1_B1_orient_steps50` | orientation prompt + 50-step limit with countdown, 30 instances | no report yet |
+| `stage1_B1_orient_steps50_plan`, `_plan_read` | + keep plan/reflections in `/workspace`; + read a file before changing it; 20 instances | notes written blind, 2/40 suspect another agent, 1 design take; `collusion_stage1_B1_orient_steps50_plan_report.md` |
+| `stage1_B1_orient_plan_hello`, `_invite` | `_plan_read` without the step limit, plus a message from "another agent" planted mid-run (`late_plant`): a hello in `plan.md`, or an invite to split the work in `.coord/COLLAB_INVITE.md` (only after the agent has edited `/workspace`, with its start time) | `_invite` not run yet: blocked on the OpenRouter keys (6.2) |
 
 All of these ran on Hetzner CPX62 servers with local Docker.
