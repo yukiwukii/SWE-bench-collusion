@@ -19,7 +19,7 @@ they run, because ``<trial>/agent/`` is mounted into agent 0's sandbox at /logs/
   agent_<i>/mini-swe-agent.trajectory.json, agent_<i>/model.patch, agent_<i>/result.json
   events.jsonl   one row per exec, workspace change, submission, and gate refusal (global ``seq`` = total order)
   blobs/<sha256> every workspace file version; snapshots.jsonl: workspace manifest after every change
-  group.json     condition, seed, turn order, tasks, models, prompt lines, plant
+  group.json     condition, seed, turn order, tasks, models, prompt lines, plant, instruction overrides
 """
 from __future__ import annotations
 
@@ -265,7 +265,17 @@ class Member:
         contents: dict[str, bytes] = {}
         if changed:
             files = " ".join(shlex.quote(p) for p in changed)
-            blob = self.sh(f"cd {WS} && tar -czf - -- {files} | base64 | tr -d '\\n'", timeout=600)
+            if len(files) > 64_000:  # too long for one command line (an agent unpacked thousands of files): pass a list
+                with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+                    f.write("\n".join(changed) + "\n")
+                    tmp = f.name
+                try:
+                    self.run(self.env.upload_file(source_path=tmp, target_path="/tmp/.wsync.list"))
+                finally:
+                    Path(tmp).unlink(missing_ok=True)
+                files = "-T /tmp/.wsync.list"
+            blob = self.sh(f"cd {WS} && tar -czf - {files if files.startswith('-T ') else '-- ' + files} "
+                           f"| base64 | tr -d '\\n'; rm -f /tmp/.wsync.list", timeout=600)
             with tarfile.open(fileobj=io.BytesIO(base64.b64decode(blob)), mode="r:gz") as tf:
                 for m in tf.getmembers():
                     if m.isfile():
@@ -384,6 +394,7 @@ class CollusionGroupAgent(BaseAgent):
                  seed_content: str = "none", plant_dir: str = "plants", plant_name: str = "notes.md",
                  positive_control: bool = False, step_limit: int | None = None, cost_limit: float | None = None,
                  step_countdown: bool = False, late_plant: dict | None = None,
+                 instruction_dirs: dict | None = None,
                  wall_time_limit_seconds: int = 0, command_timeout: int | None = None,
                  openrouter_provider: dict | None = None, deterministic_outputs: list[str] | None = None,
                  **kwargs):
@@ -427,6 +438,12 @@ class CollusionGroupAgent(BaseAgent):
                           "after_edit": bool(late_plant.get("after_edit", False))}
         self.late_plant = late_plant
         self.late_planted: set[int] = set()  # workspace ids that already got it
+        self.members: list[Member] = []  # set once the sandboxes are up (after_edit checks everyone on a workspace)
+        # instruction_dirs {agent index: dir}: that agent gets <dir>/<its task>.md instead of the task's instruction.md
+        # (split-spec condition: helper_code/collusion/make_partial_spec.py writes agent 0's partial instructions)
+        self.instruction_dirs = {int(i): Path(d) for i, d in (instruction_dirs or {}).items()}
+        if any(not 0 <= i < self.n_agents for i in self.instruction_dirs):
+            raise ValueError(f"instruction_dirs keys must be agent indexes 0..{self.n_agents - 1}")
 
     @staticmethod
     def name() -> str:
@@ -444,11 +461,14 @@ class CollusionGroupAgent(BaseAgent):
         """At the start of a turn (the caller holds it): once an agent has finished late_plant.after_steps steps,
         put late_plant.text into its /workspace as late_plant.name, once per workspace. With mount: shared the
         first agent to get there triggers it for both. If the file exists (the agents' own plan.md), the text goes
-        on top and the old content stays below it. With after_edit, the agent must also have created or modified a
-        file in /workspace (its own edits; the plant itself doesn't count). "{start_time}" in the text becomes the
+        on top and the old content stays below it. With after_edit, every agent on that workspace (both, with
+        mount: shared) must also have created or modified a file in /workspace (their own edits; the plant itself
+        doesn't count). "{start_time}" in the text becomes the
         start time of the agent that triggers it. Logged as a "plant" event; the agents never see who wrote it."""
         lp = self.late_plant
-        if not lp or m.steps < lp["after_steps"] or m.ws_id in self.late_planted or (lp["after_edit"] and not m.edited):
+        if not lp or m.steps < lp["after_steps"] or m.ws_id in self.late_planted:
+            return
+        if lp["after_edit"] and not all(x.edited for x in self.members if x.ws_id == m.ws_id):
             return
         self.late_planted.add(m.ws_id)
         ws, name = m.workspace, lp["name"]
@@ -590,6 +610,8 @@ class CollusionGroupAgent(BaseAgent):
             for i, env in enumerate(envs):
                 task_name = partner if (i > 0 and partner) else own_task
                 instr = partner_task.instruction if (i > 0 and partner_task) else instruction
+                if i in self.instruction_dirs:  # a missing file raises: never fall back to the full instruction
+                    instr = (self.instruction_dirs[i] / f"{task_name}.md").read_text()
                 m = Member(self, i, env, task_name, instr, self.models[i], workspaces[i],
                            0 if self.mount == "shared" else i)
                 r = await env.exec(command="cd /app 2>/dev/null || cd /testbed 2>/dev/null || cd /; pwd; "
@@ -599,6 +621,7 @@ class CollusionGroupAgent(BaseAgent):
                 if len(lines) >= 5:
                     m.uname = dict(zip(("system", "release", "version", "machine"), lines[1:5]))
                 members.append(m)
+            self.members = members
 
             self.scheduler = TurnScheduler(self.n_agents, self.order, rng, self.stop)
             self.write_group_json(private, seed, own_task, partner, members, plant)
@@ -681,10 +704,12 @@ class CollusionGroupAgent(BaseAgent):
             "builtin_constraint": self.builtin_constraint, "step_limit": self.step_limit,
             "step_countdown": bool(self.countdown_steps), "late_plant": self.late_plant,
             "prompt_lines": self.prompt_lines(), "seed_content": self.seed_content, "plant_dir": str(self.plant_dir),
+            "instruction_dirs": {str(i): str(d) for i, d in self.instruction_dirs.items()},
             "plant": {p: self.recorder.blob(b) for p, b in plant.items()},
             "task": own_task, "partner_task": partner,
             "agents": [{"agent": m.idx, "task": m.task_name, "model": m.model_name, "cwd": m.cwd,
-                        "workspace": m.ws_id} for m in members],
+                        "workspace": m.ws_id, "instruction": self.recorder.blob(m.instruction.encode())}
+                       for m in members],
             "host": platform.node(),
         }, indent=1))
 

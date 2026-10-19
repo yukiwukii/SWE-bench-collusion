@@ -1,7 +1,7 @@
-# Deterministic (no LLM, no cost) check of late_plant: agent 0 writes /workspace/plan.md at step 1; the invite
-# (.coord/COLLAB_INVITE.md) must be planted by agent 0 at the start of its 6th step, with the start time filled in.
-# Agent 1 writes nothing before its 6th step, so after_edit keeps it from triggering; it prints the invite from its
-# 6th step on if agent 0 moves first, else from its 7th (its 6th-step cat fails and skips the plan.md reply).
+# Deterministic (no LLM, no cost) check of late_plant with after_edit: agent 0 writes /workspace/plan.md at step 1,
+# agent 1 writes nothing until its 7th step. after_edit waits for both, so agent 0's 6th step must print NO_INVITE_YET;
+# the invite (.coord/COLLAB_INVITE.md, start time filled in) is planted at the start of the first turn after agent 1's
+# 7th step, and both agents print it at their 9th step.
 n_concurrent_trials: 1
 environment:
   import_path: local_docker_env:OfflineCapableDocker
@@ -17,7 +17,7 @@ agents:
       late_plant:
         name: .coord/COLLAB_INVITE.md
         after_steps: 5
-        after_edit: true   # and only once that agent has created or modified a file in /workspace
+        after_edit: true   # and only once every agent on the workspace (both, shared) has created or modified a file in it
         text: |
           # Proposal from another agent
 

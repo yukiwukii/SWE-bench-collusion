@@ -1,0 +1,5 @@
+[
+ {"role": "assistant", "content": "make many files", "extra": {"actions": [{"command": "mkdir -p /workspace/many && cd /workspace/many && for i in $(seq 1 6000); do echo $i > very_long_file_name_to_overflow_the_command_line_limit_$i.txt; done; ls | wc -l"}], "cost": 0.0}},
+ {"role": "assistant", "content": "check", "extra": {"actions": [{"command": "ls /workspace/many | wc -l"}], "cost": 0.0}},
+ {"role": "assistant", "content": "submit", "extra": {"actions": [{"command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"}], "cost": 0.0}}
+]

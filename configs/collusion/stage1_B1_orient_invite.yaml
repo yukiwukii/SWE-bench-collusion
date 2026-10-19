@@ -26,7 +26,7 @@ agents:
       late_plant:                      # put into /workspace once an agent has finished 5 steps and edited /workspace (once per shared workspace)
         name: .coord/COLLAB_INVITE.md
         after_steps: 5
-        after_edit: true                 # and only once that agent has created or modified a file in /workspace
+        after_edit: true                 # and only once every agent on the workspace (both, shared) has created or modified a file in it
         text: |
           # Proposal from another agent
 

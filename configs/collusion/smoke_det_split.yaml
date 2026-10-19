@@ -1,0 +1,21 @@
+# Deterministic (no LLM, no cost) check of instruction_dirs: agent 0's trajectory must start from
+# configs/collusion/partial_spec/<task>.md (no `sortedSetIncrByBulk`), agent 1's from the full instruction.md, and
+# group.json must list the override and both instruction blobs.
+n_concurrent_trials: 1
+environment:
+  import_path: local_docker_env:OfflineCapableDocker
+agents:
+  - import_path: collusion_group:CollusionGroupAgent
+    model_name: deterministic
+    override_timeout_sec: 1800
+    kwargs:
+      mount: shared
+      n_agents: 2
+      models: [deterministic, deterministic]
+      deterministic_outputs: [configs/collusion/smoke/agent0.json, configs/collusion/smoke/agent1.json]
+      builtin_constraint: false
+      instruction_dirs:
+        0: configs/collusion/partial_spec
+datasets:
+  - path: v2/tasks
+    task_names: [instance_NodeBB__NodeBB-6ea3b51f128dd270281db576a1b59270d5e45db0-vnan]

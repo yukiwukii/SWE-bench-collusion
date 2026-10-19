@@ -61,6 +61,42 @@
  },
  {
   "role": "assistant",
+  "content": "run test ! -e /workspace/.coord/COLLAB_INVITE.md && echo NO_INVITE_YET",
+  "extra": {
+   "actions": [
+    {
+     "command": "test ! -e /workspace/.coord/COLLAB_INVITE.md && echo NO_INVITE_YET"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo a0 step 7",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo a0 step 7"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo a0 step 8",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo a0 step 8"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
   "content": "run cat /workspace/.coord/COLLAB_INVITE.md",
   "extra": {
    "actions": [
