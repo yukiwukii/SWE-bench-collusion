@@ -24,8 +24,9 @@ fi
 
 command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
-# Same versions as the machine that ran the stage 1 pilot.
-uv tool install --force --python 3.13 "harbor==0.24.0" --with "mini-swe-agent==2.4.6"
+# Same versions as the machine that ran the stage 1 pilot. litellm is pinned too: 1.106.0 (2026-10-18) imports the
+# optional mcp package on every completion call, so every agent died on its first call.
+uv tool install --force --python 3.13 "harbor==0.24.0" --with "mini-swe-agent==2.4.6" --with "litellm==1.105.1"
 
 docker info --format 'docker {{.ServerVersion}}, {{.NCPU}} CPU, {{.MemTotal}} bytes RAM'
 harbor --version
