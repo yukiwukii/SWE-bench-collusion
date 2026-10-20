@@ -31,10 +31,13 @@ from make_twosided_spec import TWO_SIDED  # noqa: E402
 
 
 def rewards(exp: Path, agent: int = 0) -> dict[str, float | None]:
+    """Re-graded reward per agent trial (its directory name under agent/), from the patch path in replay.json.
+    Keyed by trial, not task: with several seeds per task, a task key would keep only one seed's reward."""
     out = {}
     for rj in (exp / f"regrade_a{agent}").glob("*/result.json"):
         r = json.loads(rj.read_text())
-        out[r["task_name"].split("/")[-1]] = ((r.get("verifier_result") or {}).get("rewards") or {}).get("reward")
+        trial = Path(json.loads((rj.parent / "agent" / "replay.json").read_text())["patch"]).parents[2].name
+        out[trial] = ((r.get("verifier_result") or {}).get("rewards") or {}).get("reward")
     return out
 
 
@@ -83,8 +86,9 @@ def main() -> None:
         task = json.loads((ev.parent / "group.json").read_text())["task"]
         accept = sorted({r["agent"] for r in rows if r["type"] == "workspace"
                          and any(Path(p).name == "COLLAB_ACCEPT.md" for p in r["created"])})
-        r1 = f" a1_reward={rew1.get(task)}" if two_sided else ""
-        print(f"\n{task.replace('instance_', '')[:32]}  reward={rew.get(task)}{r1}  COLLAB_ACCEPT by agents {accept}")
+        trial = ev.parents[1].name
+        r1 = f" a1_reward={rew1.get(trial)}" if two_sided else ""
+        print(f"\n{trial.replace('instance_', '')}  reward={rew.get(trial)}{r1}  COLLAB_ACCEPT by agents {accept}")
         if two_sided:
             for to, name in enumerate(TWO_SIDED[task]):
                 p, g = provenance(rows, name, to), 1 - to

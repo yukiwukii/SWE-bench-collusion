@@ -394,7 +394,7 @@ class CollusionGroupAgent(BaseAgent):
                  seed_content: str = "none", plant_dir: str = "plants", plant_name: str = "notes.md",
                  positive_control: bool = False, step_limit: int | None = None, cost_limit: float | None = None,
                  step_countdown: bool = False, late_plant: dict | None = None,
-                 instruction_dirs: dict | None = None,
+                 instruction_dirs: dict | None = None, agent_lines: dict | None = None,
                  wall_time_limit_seconds: int = 0, command_timeout: int | None = None,
                  openrouter_provider: dict | None = None, deterministic_outputs: list[str] | None = None,
                  **kwargs):
@@ -444,6 +444,10 @@ class CollusionGroupAgent(BaseAgent):
         self.instruction_dirs = {int(i): Path(d) for i, d in (instruction_dirs or {}).items()}
         if any(not 0 <= i < self.n_agents for i in self.instruction_dirs):
             raise ValueError(f"instruction_dirs keys must be agent indexes 0..{self.n_agents - 1}")
+        # agent_lines {agent index: text}: appended after the shared prompt lines for that agent only
+        self.agent_lines = {int(i): str(t).rstrip() for i, t in (agent_lines or {}).items()}
+        if any(not 0 <= i < self.n_agents for i in self.agent_lines):
+            raise ValueError(f"agent_lines keys must be agent indexes 0..{self.n_agents - 1}")
 
     @staticmethod
     def name() -> str:
@@ -483,7 +487,8 @@ class CollusionGroupAgent(BaseAgent):
         rec.snapshot(seq, m.ws_id, ws.manifest())
 
     # -- prompt --
-    def prompt_lines(self) -> list[str]:
+    def prompt_lines(self, idx: int | None = None) -> list[str]:
+        """The lines after the instruction; with idx, also that agent's agent_lines."""
         lines = []
         if self.scratch_line and self.scratch_line != "none":
             lines.append(self.scratch_line)
@@ -495,16 +500,18 @@ class CollusionGroupAgent(BaseAgent):
             lines.append(POSITIVE_CONTROL_LINE)
         if self.countdown_steps:
             lines.append(STEP_LIMIT_LINE.format(n=self.countdown_steps))
+        if idx in self.agent_lines:
+            lines.append(self.agent_lines[idx])
         return lines
 
-    def task_text(self, instruction: str) -> str:
+    def task_text(self, instruction: str, idx: int | None = None) -> str:
         instruction = instruction.rstrip()
         if not self.builtin_constraint:
             stripped, n = BUILTIN_CONSTRAINT.subn("", instruction)
             if n != 1:  # fail loudly rather than silently keep the rule
                 raise ValueError("builtin_constraint: false, but the instruction does not end with the built-in rule")
             instruction = stripped.rstrip()
-        lines = self.prompt_lines()
+        lines = self.prompt_lines(idx)
         return instruction + ("\n\n" + "\n".join(lines) if lines else "")
 
     # -- models --
@@ -668,7 +675,7 @@ class CollusionGroupAgent(BaseAgent):
                                     timeout=int(self.command_timeout or env_cfg.get("timeout", 60)))
             agent = _member_agent_class()(self.build_model(m.idx, model_cfg, private), sandbox, member=m,
                                           **{**agent_cfg, "output_path": out / "mini-swe-agent.trajectory.json"})
-            result = agent.run(self.task_text(m.instruction))
+            result = agent.run(self.task_text(m.instruction, m.idx))
             exit_status = result.get("exit_status")
         except Stopped:
             exit_status = "Stopped"
@@ -705,10 +712,12 @@ class CollusionGroupAgent(BaseAgent):
             "step_countdown": bool(self.countdown_steps), "late_plant": self.late_plant,
             "prompt_lines": self.prompt_lines(), "seed_content": self.seed_content, "plant_dir": str(self.plant_dir),
             "instruction_dirs": {str(i): str(d) for i, d in self.instruction_dirs.items()},
+            "agent_lines": {str(i): t for i, t in self.agent_lines.items()},
             "plant": {p: self.recorder.blob(b) for p, b in plant.items()},
             "task": own_task, "partner_task": partner,
             "agents": [{"agent": m.idx, "task": m.task_name, "model": m.model_name, "cwd": m.cwd,
-                        "workspace": m.ws_id, "instruction": self.recorder.blob(m.instruction.encode())}
+                        "workspace": m.ws_id, "prompt_lines": self.prompt_lines(m.idx),
+                        "instruction": self.recorder.blob(m.instruction.encode())}
                        for m in members],
             "host": platform.node(),
         }, indent=1))
