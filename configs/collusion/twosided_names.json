@@ -1,0 +1,926 @@
+{
+ "instance_NodeBB__NodeBB-00c70ce7b0541cfc94afe567921d7668cdc8f4ac-vnan": [
+  [
+   "getOrCreate",
+   "obtainPostStash",
+   "the cache accessor"
+  ],
+  [
+   "getUidsByUserslugs",
+   "resolveSlugsToUids",
+   "the slug-to-uid lookup"
+  ]
+ ],
+ "instance_NodeBB__NodeBB-8168c6c40707478f71b8af60300830fe554c778c-vf2cf3cbd463b7ad942381f1c6d077626485a1e9e": [
+  [
+   "getLocalCoverPath",
+   "resolveBannerStoragePath",
+   "the local cover-path method"
+  ],
+  [
+   "getLocalAvatarPath",
+   "localPortraitLocation",
+   "the local avatar-path method"
+  ]
+ ],
+ "instance_NodeBB__NodeBB-f083cd559d69c16481376868c8da65172729c0ca-vnan": [
+  [
+   "getSortedSetMembersWithScores",
+   "zsetEntriesScored",
+   "the single-key scored-members method"
+  ],
+  [
+   "getSortedSetsMembersWithScores",
+   "bulkRankedPairsFor",
+   "the multi-key scored-members method"
+  ]
+ ],
+ "instance_NodeBB__NodeBB-f1a80d48cc45877fcbadf34c2345dd9709722c7f-v4fbcfae8b15e4ce5d132c408bca69ebb9cf146ed": [
+  [
+   "getType",
+   "privilegeKindOf",
+   "the privilege-type lookup"
+  ],
+  [
+   "getPrivilegesByFilter",
+   "listPrivNamesMatching",
+   "the filtered privilege listing"
+  ]
+ ],
+ "instance_NodeBB__NodeBB-f2082d7de85eb62a70819f4f3396dd85626a0c0a-vd59a5728dfc977f44533186ace531248c2917516": [
+  [
+   "getSummary",
+   "briefPostView",
+   "the post-summary method"
+  ],
+  [
+   "getRaw",
+   "sourceTextOf",
+   "the raw-content method"
+  ]
+ ],
+ "instance_ansible__ansible-3889ddeb4b780ab4bac9ca2e75f8c1991bcabe83-v0f01c69f1e2528b935359cfe578530722bca2c59": [
+  [
+   "check_chain_present",
+   "probe_user_chain",
+   "the chain-existence check"
+  ],
+  [
+   "check_rule_present",
+   "rule_already_installed",
+   "the rule-existence check"
+  ]
+ ],
+ "instance_ansible__ansible-395e5e20fab9cad517243372fa3c3c5d9e09ab2a-v7eee2454f617569fd6889f2211f75bc02a35f9f8": [
+  [
+   "IteratingStates",
+   "PlayWalkPhase",
+   "the iteration-state enum"
+  ],
+  [
+   "FailedStates",
+   "BreakdownFlags",
+   "the failure-state flag enum"
+  ]
+ ],
+ "instance_ansible__ansible-40ade1f84b8bb10a63576b0ac320c13f57c87d34-v6382ea168a93d80a64aab1fbd8c4f02dc5ada5bf": [
+  [
+   "get_partition_uuid",
+   "lookup_volume_ident",
+   "the partition-UUID resolver"
+  ],
+  [
+   "gen_mounts_by_source",
+   "iter_source_mountlines",
+   "the per-source mount generator"
+  ]
+ ],
+ "instance_ansible__ansible-42355d181a11b51ebfc56f6f4b3d9c74e01cb13b-v1055803c3a812189a1133297f7f5468579283f86": [
+  [
+   "get_play",
+   "climb_to_owning_play",
+   "the containing-play lookup"
+  ],
+  [
+   "get_delegated_vars_and_hostname",
+   "resolve_delegate_target",
+   "the delegated-vars method"
+  ]
+ ],
+ "instance_ansible__ansible-5e369604e1930b1a2e071fecd7ec5276ebd12cb1-v0f01c69f1e2528b935359cfe578530722bca2c59": [
+  [
+   "set_queue",
+   "route_display_via",
+   "the display-queue setter"
+  ],
+  [
+   "send_display",
+   "relay_display_call",
+   "the display-forwarding method"
+  ]
+ ],
+ "instance_ansible__ansible-949c503f2ef4b2c5d668af0492a5c0db1ab86140-v0f01c69f1e2528b935359cfe578530722bca2c59": [
+  [
+   "AnsibleRequiredOptionError",
+   "AnsibleMissingSettingError",
+   "the required-option exception"
+  ],
+  [
+   "load_galaxy_server_defs",
+   "register_galaxy_entries",
+   "the Galaxy server-definition loader"
+  ]
+ ],
+ "instance_ansible__ansible-c1f2df47538b884a43320f53e787197793b105e8-v906c969b551b346ef54a2c0b41e04f632b7b73c2": [
+  [
+   "ApiParameters",
+   "DeviceSideView",
+   "the API-parameters class"
+  ],
+  [
+   "ModuleParameters",
+   "TaskArgsAdapter",
+   "the module-parameters class"
+  ]
+ ],
+ "instance_element-hq__element-web-33e8edb3d508d6eefb354819ca693b7accc695e7": [
+  [
+   "KeyCombo",
+   "ChordSpec",
+   "the key-combination type"
+  ],
+  [
+   "isKeyComboMatch",
+   "eventFitsShortcut",
+   "the key-combination match function"
+  ]
+ ],
+ "instance_element-hq__element-web-4c6b0d35add7ae8d58f71ea1711587e31081444b-vnan": [
+  [
+   "setAnonymity",
+   "applyTrackingPrivacy",
+   "the anonymity setter"
+  ],
+  [
+   "getAnonymity",
+   "currentPrivacyTier",
+   "the anonymity getter"
+  ]
+ ],
+ "instance_element-hq__element-web-66d0b318bc6fee0d17b54c1781d6ab5d5d323135-vnan": [
+  [
+   "getLengthTo",
+   "msBeforeChunk",
+   "the accumulated-length method"
+  ],
+  [
+   "findByTime",
+   "chunkAtOffset",
+   "the chunk-by-time lookup"
+  ]
+ ],
+ "instance_element-hq__element-web-aec454dd6feeb93000380523cbb0b3681c0275fd-vnan": [
+  [
+   "getOnlyKnownProfile",
+   "peekMutualMember",
+   "the known-user profile getter"
+  ],
+  [
+   "fetchProfile",
+   "loadAccountCard",
+   "the profile fetch method"
+  ]
+ ],
+ "instance_element-hq__element-web-b007ea81b2ccd001b00f332bee65070aa7fc00f9-vnan": [
+  [
+   "arraySmoothingResample",
+   "arrayGentleRefit",
+   "the smoothing resample function"
+  ],
+  [
+   "arrayRescale",
+   "clampSpanMap",
+   "the array rescale function"
+  ]
+ ],
+ "instance_element-hq__element-web-cf3c899dd1f221aa1a1f4c5a80dffc05b9c21c85-vnan": [
+  [
+   "VoiceBroadcastLiveness",
+   "BroadcastOnAirState",
+   "the liveness type"
+  ],
+  [
+   "getLiveness",
+   "liveStatusNow",
+   "the liveness getter"
+  ]
+ ],
+ "instance_element-hq__element-web-fe14847bb9bb07cab1b9c6c54335ff22ca5e516a-vnan": [
+  [
+   "setCurrent",
+   "markActiveRecording",
+   "the current-recording setter"
+  ],
+  [
+   "getByInfoEvent",
+   "recordingForInfo",
+   "the recording-by-info-event lookup"
+  ]
+ ],
+ "instance_flipt-io__flipt-2ca5dfb3513e4e786d2b037075617cccc286d5c3": [
+  [
+   "MetricsConfig",
+   "TelemetryKnobs",
+   "the metrics configuration struct"
+  ],
+  [
+   "OTLPMetricsConfig",
+   "CollectorPushOpts",
+   "the metrics OTLP configuration struct"
+  ]
+ ],
+ "instance_flipt-io__flipt-2ce8a0331e8a8f63f2c1b555db8277ffe5aa2e63": [
+  [
+   "FliptAcceptServerVersionUnaryInterceptor",
+   "VersionGateInterceptor",
+   "the accept-server-version interceptor"
+  ],
+  [
+   "FliptAcceptServerVersionFromContext",
+   "PinnedVersionOf",
+   "the accept-server-version context getter"
+  ]
+ ],
+ "instance_flipt-io__flipt-492cc0b158200089dceede3b1aba0ed28df3fb1d": [
+  [
+   "RequireTLS",
+   "EnforceSecureLink",
+   "the require-TLS field"
+  ],
+  [
+   "NetTimeout",
+   "WireDeadline",
+   "the network-timeout field"
+  ]
+ ],
+ "instance_flipt-io__flipt-56a620b8fc9ef7a0819b47709aa541cdfdbba00b": [
+  [
+   "WithMaxBackoffDuration",
+   "CapRetryWait",
+   "the max-backoff option"
+  ],
+  [
+   "SendAudit",
+   "DeliverEventSigned",
+   "the single-event send method"
+  ]
+ ],
+ "instance_flipt-io__flipt-5aef5a14890aa145c22d864a834694bae3a6f112": [
+  [
+   "WithInsecureTLS",
+   "SkipPeerVerify",
+   "the insecure-TLS option"
+  ],
+  [
+   "WithCABundle",
+   "TrustRootsPEM",
+   "the CA-bundle option"
+  ]
+ ],
+ "instance_flipt-io__flipt-690672523398c2b6f6e4562f0bf9868664ab894f": [
+  [
+   "GetExporter",
+   "PickSpanBackend",
+   "the span-exporter builder"
+  ],
+  [
+   "NewProvider",
+   "BuildTraceRig",
+   "the tracer-provider constructor"
+  ]
+ ],
+ "instance_flipt-io__flipt-6fe76d024ee0c50ddb09c86f4ae0bd4c208fd65f": [
+  [
+   "InterceptorOptions",
+   "GuardSettings",
+   "the interceptor options struct"
+  ],
+  [
+   "WithServerSkipsAuthentication",
+   "ExemptServer",
+   "the skip-authentication option"
+  ]
+ ],
+ "instance_flipt-io__flipt-9d25c18b79bc7829a6fb08ec9e8793d5d17e2868": [
+  [
+   "EvaluationBridgeInput",
+   "BridgeQuery",
+   "the bridge input type"
+  ],
+  [
+   "EvaluationBridgeOutput",
+   "BridgeVerdict",
+   "the bridge output type"
+  ]
+ ],
+ "instance_flipt-io__flipt-c6a7b1fd933e763b1675281b30077e161fa115a1": [
+  [
+   "WithNamespace",
+   "IntoTenant",
+   "the namespace option"
+  ],
+  [
+   "WithCreateNamespace",
+   "AutoProvisionSpace",
+   "the create-namespace option"
+  ]
+ ],
+ "instance_flipt-io__flipt-e50808c03e4b9d25a6a78af9c61a3b1616ea356b": [
+  [
+   "EventExporter",
+   "AuditSpanPipe",
+   "the event exporter interface"
+  ],
+  [
+   "NewSinkSpanExporter",
+   "MakeAuditShipper",
+   "the sink span-exporter constructor"
+  ]
+ ],
+ "instance_flipt-io__flipt-e91615cf07966da41756017a7d571f9fc0fdbe80": [
+  [
+   "NewExporter",
+   "BuildDumper",
+   "the exporter constructor"
+  ],
+  [
+   "NewImporter",
+   "MakeIngestor",
+   "the importer constructor"
+  ]
+ ],
+ "instance_future-architect__vuls-3f8de0268376e1f0fa6d9d61abb0d9d3d580ea7d": [
+  [
+   "PortStat",
+   "SocketBinding",
+   "the parsed-port struct"
+  ],
+  [
+   "NewPortStat",
+   "ParseHostPortPair",
+   "the port-string parser"
+  ]
+ ],
+ "instance_future-architect__vuls-6eff6a9329a65cc412e79b8f82444dfa3d0f0b5a": [
+  [
+   "IsStandardSupportEnded",
+   "MainlineCoverageOver",
+   "the standard-support check"
+  ],
+  [
+   "IsExtendedSuppportEnded",
+   "LtsWindowClosed",
+   "the extended-support check"
+  ]
+ ],
+ "instance_future-architect__vuls-7eb77f5b5127c847481bcf600b4dca2b7a85cf3e": [
+  [
+   "PortScanConf",
+   "ProbeSettings",
+   "the port-scan configuration struct"
+  ],
+  [
+   "GetScanTechniques",
+   "ResolveProbeModes",
+   "the scan-technique mapping method"
+  ]
+ ],
+ "instance_future-architect__vuls-83bcca6e669ba2e4102f26c4a2b52f78c7861f1a": [
+  [
+   "ListenPort",
+   "BoundEndpoint",
+   "the listen-port type"
+  ],
+  [
+   "HasPortScanSuccessOn",
+   "AnyProbeReached",
+   "the port-scan success check"
+  ]
+ ],
+ "instance_future-architect__vuls-d576b6c6c15e56c47cc3e26f5878867677d4a9ea": [
+  [
+   "DetectPkgCves",
+   "FindOsPackageVulns",
+   "the package CVE detection function"
+  ],
+  [
+   "DetectGitHubCves",
+   "PullRepoAlerts",
+   "the GitHub CVE detection function"
+  ]
+ ],
+ "instance_future-architect__vuls-e1fab805afcfc92a2a615371d0ec1e667503c254-v264a82e2f4818e30f5a25e4da53b27ba119f62b5": [
+  [
+   "RenameKernelSourcePackageName",
+   "NormalizeLinuxSrcLabel",
+   "the kernel source-name normalizer"
+  ],
+  [
+   "IsKernelSourcePackage",
+   "IsKernelOrigin",
+   "the kernel source-package check"
+  ]
+ ],
+ "instance_gravitational__teleport-2b15263e49da5625922581569834eec4838a9257-vee9b09fb20c43af7e520f57e9239bbcf46b7113d": [
+  [
+   "TokenCount",
+   "UsageTally",
+   "the token-count struct"
+  ],
+  [
+   "NewAsynchronousTokenCounter",
+   "StartStreamedCounter",
+   "the asynchronous token-counter constructor"
+  ]
+ ],
+ "instance_gravitational__teleport-46aa81b1ce96ebb4ebed2ae53fd78cd44a05da6c-vee9b09fb20c43af7e520f57e9239bbcf46b7113d": [
+  [
+   "AddColumn",
+   "AppendField",
+   "the add-column method"
+  ],
+  [
+   "AddFootnote",
+   "AttachNoteMark",
+   "the add-footnote method"
+  ]
+ ],
+ "instance_gravitational__teleport-59d39dee5a8a66e5b8a18a9085a199d369b1fba8-v626ec2a48416b10a88641359a169d99e935ff037": [
+  [
+   "CADownloader",
+   "RootCertFetcher",
+   "the CA downloader interface"
+  ],
+  [
+   "NewRealDownloader",
+   "MakeCloudCAGetter",
+   "the default downloader constructor"
+  ]
+ ],
+ "instance_gravitational__teleport-629dc432eb191ca479588a8c49205debb83e80e2": [
+  [
+   "InputBuf",
+   "IngressDepth",
+   "the input-buffer option"
+  ],
+  [
+   "OutputBuf",
+   "ResultBacklog",
+   "the output-buffer option"
+  ]
+ ],
+ "instance_gravitational__teleport-7744f72c6eb631791434b648ba41083b5f6d2278-vce94f93ad1030e3136852817f2423c1b3ac37bc4": [
+  [
+   "NetlinkConnector",
+   "KernelAuditLink",
+   "the netlink connector interface"
+  ],
+  [
+   "SendMsg",
+   "EmitAuditRecord",
+   "the audit send method"
+  ]
+ ],
+ "instance_gravitational__teleport-8302d467d160f869b77184e262adbe2fbc95d9ba-vce94f93ad1030e3136852817f2423c1b3ac37bc4": [
+  [
+   "DiagResult",
+   "EnclaveProbeReport",
+   "the diagnostics result struct"
+  ],
+  [
+   "Diag",
+   "RunEnclaveProbe",
+   "the diagnostics function"
+  ]
+ ],
+ "instance_gravitational__teleport-b8fbb2d1e90ffcde88ed5fe9920015c1be075788-vee9b09fb20c43af7e520f57e9239bbcf46b7113d": [
+  [
+   "NewContextReader",
+   "WrapStdinCtx",
+   "the context-reader constructor"
+  ],
+  [
+   "ReadContext",
+   "AwaitLine",
+   "the context-aware read method"
+  ]
+ ],
+ "instance_gravitational__teleport-bb562408da4adeae16e025be65e170959d1ec492-vee9b09fb20c43af7e520f57e9239bbcf46b7113d": [
+  [
+   "NewCursor",
+   "SpawnTail",
+   "the new-cursor method"
+  ],
+  [
+   "TryRead",
+   "PollNow",
+   "the non-blocking read method"
+  ]
+ ],
+ "instance_gravitational__teleport-d6ffe82aaf2af1057b69c61bf9df777f5ab5635a-vee9b09fb20c43af7e520f57e9239bbcf46b7113d": [
+  [
+   "MatchExpression",
+   "AffixMatcher",
+   "the matcher expression type"
+  ],
+  [
+   "RegexpReplaceExpr",
+   "PatternSubNode",
+   "the regexp-replace expression node"
+  ]
+ ],
+ "instance_gravitational__teleport-e6681abe6a7113cfd2da507f05581b7bdf398540-v626ec2a48416b10a88641359a169d99e935ff037": [
+  [
+   "AsyncEmitterConfig",
+   "BufferedEmitterOpts",
+   "the async emitter config struct"
+  ],
+  [
+   "NewAsyncEmitter",
+   "StartQueuedEmitter",
+   "the async emitter constructor"
+  ]
+ ],
+ "instance_gravitational__teleport-eefac60a350930e5f295f94a2d55b94c1988c04e-vee9b09fb20c43af7e520f57e9239bbcf46b7113d": [
+  [
+   "DMIInfoFromFS",
+   "ReadHardwareIds",
+   "the DMI reader function"
+  ],
+  [
+   "ParseOSReleaseFromReader",
+   "DecodeDistroFile",
+   "the os-release parser"
+  ]
+ ],
+ "instance_gravitational__teleport-f432a71a13e698b6e1c4672a2e9e9c1f32d35c12": [
+  [
+   "GetTLSCertAndSigner",
+   "TlsPairForCA",
+   "the TLS cert-and-signer method"
+  ],
+  [
+   "GetJWTSigner",
+   "WebTokenCrypter",
+   "the JWT signer method"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-0a90f9f0256e4f933523e9842799e39f95ae29ce-v76304ecdb3a5954fcf13feb710e8c40fcf24b73c": [
+  [
+   "get_colon_only_loc_pub",
+   "split_place_colon",
+   "the colon-only location/publisher splitter"
+  ],
+  [
+   "get_location_and_publisher",
+   "decode_ia_publishers",
+   "the location-and-publisher parser"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-30bc73a1395fba2300087c7f307e54bb5372b60a-v76304ecdb3a5954fcf13feb710e8c40fcf24b73c": [
+  [
+   "get_relpath",
+   "compose_archive_path",
+   "the relative-path method"
+  ],
+  [
+   "id_to_item_and_batch_id",
+   "locate_cover_slot",
+   "the cover-id mapping method"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-322d7a46cdc965bfabbf9500e98fde098c9d95b2-v13642507b4fc1f8d234172bf8129942da2c2ca26": [
+  [
+   "SolrUpdateState",
+   "IndexDelta",
+   "the Solr update-state dataclass"
+  ],
+  [
+   "WorkSolrUpdater",
+   "OpusDocBuilder",
+   "the work updater class"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-3f7db6bbbcc7c418b3db72d157c6aed1d45b2ccf-v430f20c722405e462d9ef44dee7d34c41e76fe7a": [
+  [
+   "get_line",
+   "decode_dump_row",
+   "the line decoder"
+  ],
+  [
+   "is_nonbook",
+   "binding_is_media",
+   "the non-book check"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-5c6c22f3d2edf2f1b10f5dc335e32cb6a5f40341-v76304ecdb3a5954fcf13feb710e8c40fcf24b73c": [
+  [
+   "get_isbn_10_and_13",
+   "split_isbn_lengths",
+   "the ISBN splitter"
+  ],
+  [
+   "get_publisher_and_place",
+   "divide_imprint_parts",
+   "the publisher-and-place splitter"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-5de7de19211e71b29b2f2ba3b1dff2fe065d660f-v08d8e8889ec945ab821fb156c04c7d2e2810debb": [
+  [
+   "get_isbn_or_asin",
+   "pick_isbn_asin_slot",
+   "the ISBN-or-ASIN method"
+  ],
+  [
+   "is_valid_identifier",
+   "identifier_well_formed",
+   "the identifier validity check"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-630221ab686c64e75a2ce253c893c033e4814b2e-v93c53c13d5f9b383ebb411ee7750b49dcd1a34c6": [
+  [
+   "AwardConditionsError",
+   "NominationRuleBroken",
+   "the award-conditions exception"
+  ],
+  [
+   "user_has_read_work",
+   "patron_finished_work",
+   "the already-read check"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-6e889f4a733c9f8ce9a9bd2ec6a934413adcedb9-ve8c8d62a2b60610a3c4631f5f23ed866bada9818": [
+  [
+   "LanguageMultipleMatchError",
+   "AmbiguousTongueError",
+   "the multiple-match language exception"
+  ],
+  [
+   "get_abbrev_from_full_lang_name",
+   "lang_code_for_name",
+   "the language-code lookup"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-7cbfb812ef0e1f9716e2d6e85d538a96fcb79d13-vfa6ff903cb27f336e17654595dd900fa943dcd91": [
+  [
+   "persist_observations",
+   "store_patron_reviews",
+   "the observation persistence classmethod"
+  ],
+  [
+   "get_key_value_pair",
+   "resolve_obs_labels",
+   "the key-value lookup classmethod"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-8a9d9d323dfcf2a5b4f38d70b1108b030b20ebf3-v13642507b4fc1f8d234172bf8129942da2c2ca26": [
+  [
+   "_get_year",
+   "_pub_year_digits",
+   "the year parser"
+  ],
+  [
+   "_get_languages",
+   "_marc_lang_codes",
+   "the language parser"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-d40ec88713dc95ea791b252f92d2f7b75e107440-v13642507b4fc1f8d234172bf8129942da2c2ca26": [
+  [
+   "check_cover_url_host",
+   "cover_host_allowed",
+   "the cover-host check"
+  ],
+  [
+   "author_import_record_to_author",
+   "materialize_author_ref",
+   "the author import-record converter"
+  ]
+ ],
+ "instance_internetarchive__openlibrary-d8162c226a9d576f094dc1830c4c1ffd0be2dd17-v76304ecdb3a5954fcf13feb710e8c40fcf24b73c": [
+  [
+   "get_non_isbn_asin",
+   "find_amazon_only_id",
+   "the non-ISBN ASIN getter"
+  ],
+  [
+   "is_asin_only",
+   "lacks_isbn_has_asin",
+   "the ASIN-only check"
+  ]
+ ],
+ "instance_navidrome__navidrome-29bc17acd71596ae92131aca728716baf5af9906": [
+  [
+   "AddWithTTL",
+   "PutExpiring",
+   "the add-with-TTL method"
+  ],
+  [
+   "GetWithLoader",
+   "FetchOrCompute",
+   "the get-with-loader method"
+  ]
+ ],
+ "instance_navidrome__navidrome-5001518260732e36d9a42fb8d4c054b28afab310": [
+  [
+   "UserPropsRepository",
+   "AccountKVStore",
+   "the user-properties repository interface"
+  ],
+  [
+   "UserProps",
+   "PerUserSettings",
+   "the user-properties accessor"
+  ]
+ ],
+ "instance_navidrome__navidrome-66b74c81f115c78cb69910b0472eeb376750efc4": [
+  [
+   "Encrypt",
+   "SealSecret",
+   "the encryption function"
+  ],
+  [
+   "Decrypt",
+   "UnwrapCipher",
+   "the decryption function"
+  ]
+ ],
+ "instance_navidrome__navidrome-b65e76293a917ee2dfc5d4b373b1c62e054d0dca": [
+  [
+   "WithClientUniqueId",
+   "StampDeviceTag",
+   "the client-id context setter"
+  ],
+  [
+   "ClientUniqueIdFrom",
+   "OriginIdFromCtx",
+   "the client-id context getter"
+  ]
+ ],
+ "instance_navidrome__navidrome-dfa453cc4ab772928686838dc73d0130740f054e": [
+  [
+   "InPlaylist",
+   "MemberOfList",
+   "the in-playlist operator"
+  ],
+  [
+   "NotInPlaylist",
+   "AbsentFromList",
+   "the not-in-playlist operator"
+  ]
+ ],
+ "instance_protonmail__webclients-2dce79ea4451ad88d6bfe94da22e7f2f988efa60": [
+  [
+   "getElementSenders",
+   "listedCorrespondents",
+   "the element-senders helper"
+  ],
+  [
+   "isProtonSender",
+   "verifiedOfficialSender",
+   "the Proton-sender check"
+  ]
+ ],
+ "instance_protonmail__webclients-2f2f6c311c6128fe86976950d3c0c2db07b03921": [
+  [
+   "queryUnmigratedShares",
+   "fetchPendingLegacyDrives",
+   "the unmigrated-shares query"
+  ],
+  [
+   "queryMigrateLegacyShares",
+   "submitRekeyedPackets",
+   "the migrate-shares query"
+  ]
+ ],
+ "instance_protonmail__webclients-51742625834d3bd0d10fe0c7e76b8739a59c6b9f": [
+  [
+   "getHostnameWithRegex",
+   "regexHostPart",
+   "the regex hostname extractor"
+  ],
+  [
+   "punycodeUrl",
+   "asciiEncodeLink",
+   "the punycode URL converter"
+  ]
+ ],
+ "instance_protonmail__webclients-5e815cfa518b223a088fa9bb232a5fc90ab15691": [
+  [
+   "useRenewToggle",
+   "useAutoPayRenewal",
+   "the renew-toggle hook"
+  ],
+  [
+   "applyHOCs",
+   "composeWrappers",
+   "the HOC-application helper"
+  ]
+ ],
+ "instance_protonmail__webclients-d3e513044d299d04e509bf8c0f4e73d812030246": [
+  [
+   "getPageSizeString",
+   "pageSizeLabel",
+   "the page-size string helper"
+  ],
+  [
+   "getLabelID",
+   "metricsLabelKey",
+   "the label-id helper"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-322834d0e6bf17e5661145c9f085b41215c280e8-v488d33dd1b2540b234cbb0468af6b6614941ce8f": [
+  [
+   "NoWrapperAvailableError",
+   "QtBindingMissing",
+   "the no-wrapper exception"
+  ],
+  [
+   "check_qt_available",
+   "assert_qt_importable",
+   "the Qt availability check"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-394bfaed6544c952c6b3463751abab3176ad4997-vafb3e8e01b31319c66c4e666b8a3b1d8ba55db24": [
+  [
+   "Bitness",
+   "WordWidth",
+   "the bitness enum"
+  ],
+  [
+   "SectionHeader",
+   "ElfSectionRow",
+   "the section-header dataclass"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-44e64199ed38003253f0296badd4a447645067b6-v2ef375ac784985212b1805e1d0431dc8f1b3c171": [
+  [
+   "from_pyqt_importlib",
+   "via_pip_wheel_meta",
+   "the PyQt-importlib constructor"
+  ],
+  [
+   "from_qt",
+   "via_qt_fallback",
+   "the Qt-version constructor"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-5fdc83e5da6222fe61163395baaad7ae57fa2cb4-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d": [
+  [
+   "FontFamilies",
+   "TypefaceList",
+   "the font-families class"
+  ],
+  [
+   "from_str",
+   "parse_css_faces",
+   "the string parser classmethod"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-e57b6e0eeeb656eb2c84d6547d5a0a7333ecee85-v2ef375ac784985212b1805e1d0431dc8f1b3c171": [
+  [
+   "single_download_finished",
+   "one_fetch_done",
+   "the single-download signal"
+  ],
+  [
+   "all_downloads_finished",
+   "batch_fetch_complete",
+   "the all-downloads signal"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-f631cd4422744160d9dcf7a0455da532ce973315-v35616345bb8052ea303186706cec663146f0f184": [
+  [
+   "VersionChange",
+   "ReleaseDelta",
+   "the version-change enum"
+  ],
+  [
+   "matches_filter",
+   "passes_notify_rule",
+   "the filter-match method"
+  ]
+ ],
+ "instance_qutebrowser__qutebrowser-fcfa069a06ade76d91bac38127f3235c13d78eb1-v5fc38aaf22415ab0b70567368332beee7955b367": [
+  [
+   "UserVersion",
+   "SchemaStamp",
+   "the user-version class"
+  ],
+  [
+   "from_int",
+   "unpack_word",
+   "the integer parser classmethod"
+  ]
+ ]
+}

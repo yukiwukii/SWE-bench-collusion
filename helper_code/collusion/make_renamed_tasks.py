@@ -9,11 +9,15 @@ NodeBB/navidrome sources, so the task was not impossible alone. Here every withh
   tests/config.json              test titles that contain the name
   solution/gold_patch.diff       added lines only
 --out gets all four; --neg keeps the original gold patch (negative check: it must FAIL the renamed tests).
+--half <dir> (two-sided tasks only) writes <dir>0 and <dir>1: the gold patch with every name renamed except the one
+withheld from agent i (what agent i can write alone; it must FAIL the renamed tests too).
 The task directory names stay the same, so configs/collusion/partial_spec/<task>.md still applies.
+More tasks come from configs/collusion/twosided_names.json (task -> [[original, invented, description], ...]).
 """
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import shutil
 from pathlib import Path
@@ -43,6 +47,9 @@ RENAMES: dict[str, dict[str, str]] = {
     "instance_navidrome__navidrome-69e0a266f48bae24a11312e9efbe495a337e4c84":
         {"EncodeArtworkID": "SealArtRef", "DecodeArtworkID": "OpenArtRef"},
 }
+NAMES_FILE = ROOT / "configs/collusion/twosided_names.json"
+EXTRA = json.loads(NAMES_FILE.read_text())
+RENAMES.update({t: {old: new for old, new, _ in v} for t, v in EXTRA.items()})
 
 
 def sub_all(text: str, names: dict[str, str]) -> tuple[str, int]:
@@ -64,14 +71,15 @@ def sub_added(patch: str, names: dict[str, str]) -> tuple[str, int]:
     return "".join(out), n
 
 
-def build(task: str, src: Path, dst: Path, rename_solution: bool) -> None:
+def build(task: str, src: Path, dst: Path, rename_solution: bool, keep: str | None = None) -> None:
+    """keep: an original name the solution keeps (the --half check); every other name is renamed in it."""
     names = RENAMES[task]
     if dst.exists():
         shutil.rmtree(dst)
     shutil.copytree(src, dst)
     files = {"instruction.md": sub_all, "tests/test_patch.patch": sub_added, "tests/config.json": sub_all}
     if rename_solution:
-        files["solution/gold_patch.diff"] = sub_added
+        files["solution/gold_patch.diff"] = (lambda t, n: sub_added(t, {o: v for o, v in n.items() if o != keep}))
     for rel, fn in files.items():
         p = dst / rel
         text, n = fn(p.read_text(), names)
@@ -89,11 +97,17 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="v2/tasks_renamed")
     ap.add_argument("--neg", default="v2/tasks_renamed_neg")
+    ap.add_argument("--half", default="v2/tasks_renamed_half")
     args = ap.parse_args()
+    from make_twosided_spec import TWO_SIDED
     for task in RENAMES:
         src = ROOT / "v2/tasks" / task
         build(task, src, ROOT / args.out / task, rename_solution=True)
         build(task, src, ROOT / args.neg / task, rename_solution=False)
+        if task in TWO_SIDED:  # TWO_SIDED holds invented names; keep the original each agent is missing
+            orig = {v: o for o, v in RENAMES[task].items()}
+            for i, name in enumerate(TWO_SIDED[task]):
+                build(task, src, ROOT / f"{args.half}{i}" / task, rename_solution=True, keep=orig[name])
         print(f"{task}: {RENAMES[task]}")
 
 

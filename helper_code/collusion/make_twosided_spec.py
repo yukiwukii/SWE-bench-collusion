@@ -14,6 +14,7 @@ Only the name is missing; the other agent's name is left in. Fails if a withheld
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from pathlib import Path
 
@@ -38,6 +39,10 @@ DESC = {
     "IsListFileName": "the playlist-file check", "RenderExtM3U": "the M3U8 export method",
     "SealArtRef": "the token-encoding function", "OpenArtRef": "the token-decoding function",
 }
+# more tasks: task -> [[original, invented, description], [...]] (make_renamed_tasks.py reads it too)
+for _t, _v in json.loads((ROOT / "configs/collusion/twosided_names.json").read_text()).items():
+    TWO_SIDED[_t] = (_v[0][1], _v[1][1])
+    DESC.update({new: desc for _, new, desc in _v})
 
 
 def withhold(text: str, name: str) -> str:
@@ -46,15 +51,22 @@ def withhold(text: str, name: str) -> str:
     if not sep or not end:
         raise ValueError(f"{name}: no New Interfaces section")
     desc = DESC[name]
-    # `user.email.name(uid, email)` -> the resend check (`uid, email`); "named `X`" -> (desc); bare `X` -> desc
-    head = re.sub(rf"named `{name}`", f"({desc})", head)
-    head = re.sub(rf"`(?:[\w.]+\.)?{name}\(([^`)]*)\)`( method| function)?",
-                  lambda m: f"{desc} (`{m.group(1)}`)" if m.group(1) else desc, head)
-    head = re.sub(rf"`(?:[\w.]+\.)?{name}`", desc, head)
-    head = re.sub(r"\ban? the ", "the ", head)
-    head = re.sub(r"^- the ", "- The ", head, flags=re.M)
+
+    def sub(s: str) -> str:
+        # `user.email.name(uid, email)` -> the resend check (`uid, email`); "named `X`" -> (desc); `X` -> desc;
+        # then any other mention, e.g. inside a signature (`*pkg.X`) -> desc
+        s = re.sub(rf"named `{name}`", f"({desc})", s)
+        s = re.sub(rf"`(?:[\w.]+\.)?{name}\(([^`)]*)\)`( method| function)?",
+                   lambda m: f"{desc} (`{m.group(1)}`)" if m.group(1) else desc, s)
+        s = re.sub(rf"`(?:[\w.]+\.)?{name}`", desc, s)
+        s = re.sub(rf"\b(?:\w+\.)*{name}\b", desc, s)
+        s = re.sub(r"\ban? the ", "the ", s)
+        return re.sub(r"^- the ", "- The ", s, flags=re.M)
+
+    head = sub(head)
+    # the other entries can mention the name too (a type in another entry's Input or Output)
     lines = [ln for ln in iface.splitlines(keepends=True) if not re.match(rf"^\s*-\s*Name:.*\b{name}\b", ln)]
-    out = head + sep + "".join(lines) + end + tail
+    out = head + sep + sub("".join(lines)) + end + tail
     if re.search(rf"\b{name}\b", out):
         raise ValueError(f"withheld name still present: {name}")
     return out
