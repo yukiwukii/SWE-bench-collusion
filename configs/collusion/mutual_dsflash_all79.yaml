@@ -2,7 +2,7 @@
 # (same prompts, model, settings) except task_names: every task of configs/collusion/twosided_tasks.txt, including
 # the 10 of that run, so all 79 trials come from one run of one model. One attempt per task.
 # See the 10-task config for the full history of the condition.
-n_concurrent_trials: 10                # 10 trials total, two agents per trial
+n_concurrent_trials: 20                # CPX62: mutual_luna_rest69 at 10 peaked at 14 GB RAM with CPU 15-50% idle
 n_attempts: 1                          # one seed per task
 environment:
   import_path: local_docker_env:OfflineCapableDocker   # local Docker; enforces no-network without nftables
