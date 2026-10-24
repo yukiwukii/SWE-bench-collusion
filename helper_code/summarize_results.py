@@ -206,7 +206,8 @@ def main(out):
         w = csv.writer(f)
         w.writerow(["task", "agent_reward", "regrade_reward", "agent_error", "regrade_error",
                     *(f"regrade_reward_{a}" for a in by_agent), *cols])
-        for task in sorted(set(agent) | set(regrade)):
+        # sequences: tasks 2.. of a trajectory have no agent-phase trial of their own, only re-grades
+        for task in sorted(set(agent) | set(regrade) | {t for g in by_agent.values() for t in g}):
             a, g = agent.get(task, {}), regrade.get(task, {})
             w.writerow([task, a.get("reward"), g.get("reward"), a.get("error"), g.get("error"),
                         *(t.get(task, {}).get("reward") for t in by_agent.values()), *(a.get(c) for c in cols)])

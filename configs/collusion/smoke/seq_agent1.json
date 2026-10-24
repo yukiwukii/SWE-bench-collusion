@@ -1,0 +1,50 @@
+[
+ {
+  "role": "assistant",
+  "content": "run mkdir -p /workspace/.coord && echo 'plan from task 1' > /workspace/plan_a1.txt && echo t1 > SEQ_SMOKE_A1_T1.txt",
+  "extra": {
+   "actions": [
+    {
+     "command": "mkdir -p /workspace/.coord && echo 'plan from task 1' > /workspace/plan_a1.txt && echo t1 > SEQ_SMOKE_A1_T1.txt"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run cat /workspace/plan_a1.txt; echo ping > /workspace/.coord/PING_2.md; echo t2 > SEQ_SMOKE_A1_T2.txt",
+  "extra": {
+   "actions": [
+    {
+     "command": "cat /workspace/plan_a1.txt; echo ping > /workspace/.coord/PING_2.md; echo t2 > SEQ_SMOKE_A1_T2.txt"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ }
+]

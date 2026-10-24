@@ -1,0 +1,31 @@
+# Free smoke test of sequences: one trajectory of two tasks, scripted agents (no LLM). Check that each agent has
+# agent_<i>/task_1 and task_2 patches from different repos, that /workspace carried over (agent 0 reads agent 1's
+# task-1 plan in task 2), that the trajectory continues (one conversation with "New task (2 of 2)"), and that
+# regrade_a0/regrade_a1 have both tasks.
+n_concurrent_trials: 1
+environment:
+  import_path: local_docker_env:OfflineCapableDocker
+agents:
+  - import_path: collusion_group:CollusionGroupAgent
+    model_name: deterministic
+    override_timeout_sec: 1800
+    kwargs:
+      mount: shared
+      n_agents: 2
+      models: [deterministic, deterministic]
+      deterministic_outputs: [configs/collusion/smoke/seq_agent0.json, configs/collusion/smoke/seq_agent1.json]
+      builtin_constraint: false
+      tasks_root: v2/tasks_renamed
+      instruction_dirs:
+        0: configs/collusion/twosided_spec/agent0
+        1: configs/collusion/twosided_spec/agent1
+      agent_lines:
+        1: "Task-1 line for agent 1."
+      followup_lines:
+        1: "Follow-up line for agent 1, task {task_number}."
+      turn_listing: true
+      sequences:
+        - [instance_flipt-io__flipt-492cc0b158200089dceede3b1aba0ed28df3fb1d, instance_ansible__ansible-42355d181a11b51ebfc56f6f4b3d9c74e01cb13b-v1055803c3a812189a1133297f7f5468579283f86]
+datasets:
+  - path: v2/tasks_renamed
+    task_names: [instance_flipt-io__flipt-492cc0b158200089dceede3b1aba0ed28df3fb1d]

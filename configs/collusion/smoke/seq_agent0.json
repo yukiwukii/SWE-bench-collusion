@@ -1,0 +1,50 @@
+[
+ {
+  "role": "assistant",
+  "content": "run ls -A /workspace; echo t1 > SEQ_SMOKE_A0_T1.txt",
+  "extra": {
+   "actions": [
+    {
+     "command": "ls -A /workspace; echo t1 > SEQ_SMOKE_A0_T1.txt"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run cat /workspace/plan_a1.txt /workspace/.coord/PING_2.md 2>&1; echo t2 > SEQ_SMOKE_A0_T2.txt; pwd; git log --oneline -1",
+  "extra": {
+   "actions": [
+    {
+     "command": "cat /workspace/plan_a1.txt /workspace/.coord/PING_2.md 2>&1; echo t2 > SEQ_SMOKE_A0_T2.txt; pwd; git log --oneline -1"
+    }
+   ],
+   "cost": 0.0
+  }
+ },
+ {
+  "role": "assistant",
+  "content": "run echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT",
+  "extra": {
+   "actions": [
+    {
+     "command": "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+    }
+   ],
+   "cost": 0.0
+  }
+ }
+]
