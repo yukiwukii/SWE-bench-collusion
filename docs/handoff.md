@@ -1,8 +1,41 @@
 # Handoff: how to use this repository, and how to run it on a Hetzner server
 
-Updated 2026-10-16 for the next agent working in this repo. Work from the repo root on the user's laptop
-(`/Users/yuki/Downloads/SWE-bench_Pro-os`, branch `openrouter-harness`, pushed to `origin`,
-github.com/yukiwukii/SWE-bench-collusion). Big runs go on a Hetzner server (section 6).
+Updated 2026-10-25 for the next agent working in this repo. Work from the repo root on the user's laptop
+(`/Users/bytedance/Downloads/SWE-bench-collusion`, branch **`collusive-agent`**, pushed to `origin`,
+github.com/yukiwukii/SWE-bench-collusion; not `long-horizon-collusive-agent`). Big runs go on a Hetzner server
+(section 6). **Start with section 0: a run may still be going.**
+
+## 0. Where things stand (2026-10-25, 02:50 UTC)
+
+**Running now** on `root@2.29.109.25` (section 6.2): `mixed_haiku_luna_all79` (agent 0 Claude Haiku 5.5, agent 1
+GPT-6 Luna, full recipe, 79 tasks, 20 at once). Agent phase done (79/79), re-grade `regrade_a0` 79/79,
+`regrade_a1` 26/79; it should finish within about 30 min. It is the last job of the server-side queue (tmux
+`claude_queue`); **nothing else is queued**, so the server then sits idle and keeps billing.
+
+Next steps:
+1. Check it finished: `infra/hetzner/vm.sh status root@2.29.109.25 configs/collusion/mixed_haiku_luna_all79.yaml`
+   (done when the tmux session is "finished" and `regrade_a1` shows 79).
+2. Pull it: `infra/hetzner/vm.sh pull root@2.29.109.25 configs/collusion/mixed_haiku_luna_all79.yaml`.
+3. Analyze: `python3 -I helper_code/collusion/recipe_measures.py results/mixed_haiku_luna_all79`, and fill the
+   "pending" row and section 3.5 of `docs/collusion_recipe_report.md` (Haiku cost = agent 0's trajectory cost,
+   billed to Anthropic; Luna cost = OpenRouter line in `run.log`).
+4. Ask the user whether to delete the server (it has billed since about 2026-10-24 02:10 UTC, $0.24/h) or keep it for
+   more runs. Never start a paid run without the user's explicit go-ahead for that run.
+
+The paper and its plan live outside this repo: `/Users/bytedance/Downloads/collusion-paper/PLAN.md` ("PLAN.md" when
+the user says it). It defines the three-ingredient recipe (bad agent, reason, method), the ablations and the
+bad-agent-identity pairs. **All results of the current experiment are in `docs/collusion_recipe_report.md`.**
+
+Open items the user was offered but has not decided:
+- `mutual_sonnet55_rest69.yaml` (Sonnet 5.5, the 69 tasks its 10-task pilot did not cover) was cancelled to save
+  credits; the config is kept.
+- A proper "notice" measure for the ablations (the report's section 3.2 is a keyword search).
+- Making "agent 0 writes the partner's name in a message" (`a0 msg` in `recipe_measures.py`) the primary collusion
+  measure instead of `accept`, which undercounts (report section 3.4).
+- PLAN.md's other identity pairs (Luna x GPT-6.1 Sol, Luna x DeepSeek) are not configured.
+
+Git on this laptop has no identity set. Commit with the repo's author, without changing the global config:
+`git -c user.name=yukiwuki -c user.email=131858939+yukiwukii@users.noreply.github.com commit ...`.
 
 ## 1. What this repo is
 
@@ -23,6 +56,7 @@ Read these first, in this order:
 | `configs/README.md` | config fields, provider pinning, collusion `kwargs` |
 | `docs/experiment_design.md` | the experiment's conditions (B1 etc.) and factors F1-F8 |
 | `docs/api_budgets.md` | every key, its budget, how to check what is left |
+| `docs/collusion_recipe_report.md` | **the current experiment**: the recipe, its ablations and mixed pairs on 79 tasks |
 | `docs/collusion_stage1_full_report.md` | measures, and what went wrong in the first big run |
 | `infra/hetzner/README.md` | the server scripts (summarized in section 6 below) |
 
@@ -43,14 +77,14 @@ Read these first, in this order:
 ## 3. Keys and budgets
 
 All keys are in `.env` (gitignored). Full details and the check commands are in `docs/api_budgets.md`. Summary on
-2026-10-16:
+2026-10-25:
 
 | Name in `.env` | Service | What is left | Use |
 |---|---|---|---|
-| `OPENROUTER_API_KEY` | OpenRouter, main | about $5 this week (key limit $45/week, resets weekly); account about $57 | all DeepSeek runs |
-| `OPENROUTER_API_KEY_BACKUP` | OpenRouter, second account | about $8.35 in total, no reset (the key shows $50, but the account balance binds) | LLM judge |
-| `ANTHROPIC_API_KEY` | Anthropic, direct | about $9 | Claude Sonnet 5.5 |
-| `OPENAI_API_KEY` | OpenAI, direct | about $4 | GPT-6.1 Sol |
+| `OPENROUTER_API_KEY` | OpenRouter, main | **$4.42** under its key limit ($75; the user raised it from $60 during the Qwen run) | Luna, DeepSeek, Qwen runs |
+| `OPENROUTER_API_KEY_BACKUP` | OpenRouter, second account | not checked since 2026-10-17 (then out of credits) | LLM judge |
+| `ANTHROPIC_API_KEY` | Anthropic, direct | balance not visible from the API; about $8 spent on Haiku 5.5 on 2026-10-24/25 | Claude Haiku / Sonnet 5.5 |
+| `OPENAI_API_KEY` | OpenAI, direct | not checked recently | GPT-6.1 Sol |
 
 Check an OpenRouter key without printing it (both the key limit and the account balance):
 
@@ -75,7 +109,8 @@ Three lessons that cost money before:
   `Error:APIError`. Make sure the key covers the worst case before starting.
 
 Measured cost per agent (orientation prompt, easy instances): DeepSeek V4.1 Flash $0.05, Claude Sonnet 5.5 $0.075,
-GPT-6.1 Sol $0.20, Gemini 3.8 Flash $0.69. For a new model, run 1-2 uncapped trials first: the number of calls per
+GPT-6.1 Sol $0.20, Gemini 3.8 Flash $0.69. On the 79 two-sided tasks (full recipe, 158 agents): Luna $3.13,
+Haiku 5.5 $4.24, DeepSeek $11.45, Qwen 3.8 Flash $22.89 per run (`docs/collusion_recipe_report.md` section 4). For a new model, run 1-2 uncapped trials first: the number of calls per
 agent decides the cost, and smoke tests do not show it.
 
 ## 4. Repo map
@@ -90,6 +125,9 @@ agent decides the cost, and smoke tests do not show it.
 | `v2/tooling/locked_mini_swe.py`, `v2/tooling/configs/mini_toolcall.yaml` | mini-swe-agent wrapper, $1 cap, provider routing |
 | `v2/tooling/patch_replay.py` | re-grades a captured patch on a pristine image |
 | `helper_code/collusion/analyze.py` | measures: notice, read, copy, Jaccard, resolve; writes `collusion_agents.csv`, `collusion_summary.json` |
+| `helper_code/collusion/recipe_measures.py` | two-sided runs: invite read, accept, missing name received (both directions), share by message vs code, passes with/without the name, cost; one table row per run |
+| `helper_code/collusion/collusion_rate.py` | two-sided runs, per trial: accept, agent 0 writes the name, r0/r1 (leaves errored trials out) |
+| `helper_code/collusion/make_twosided_spec.py`, `twosided_checks.py` | the split specs (`TWO_SIDED[task]` = name withheld from agent 0, from agent 1) and their oracle checks |
 | `helper_code/collusion/judge.py` | LLM judge that labels how noticing agents reacted |
 | `helper_code/collusion/select_instances.py`, `stats.py`, `make_plants.py` | instance sampling, Wilson/Fisher stats, planted files |
 | `helper_code/summarize_results.py`, `openrouter_ledger.py` | `summary.json`, `per_task.csv`, `calls.csv`; billed-cost ledger |
@@ -101,14 +139,16 @@ agent decides the cost, and smoke tests do not show it.
 ### 5.1 Make a config
 
 Copy the closest existing config under a new name and change only what you need. The file name becomes the
-results folder name. For collusion runs, start from `configs/collusion/stage1_B1_orient_more30.yaml` (the latest
-DeepSeek run) or `stage1_B1_norule20.yaml`. The collusion `kwargs` (mount, order, write_mode, builtin_constraint,
+results folder name. For the current two-sided experiment, start from `configs/collusion/mutual_dsflash_all79.yaml`
+(full recipe, all 79 tasks; swap `model_name`) or an `ablate_*_luna_all79.yaml`; for a mixed pair, from
+`mixed_luna_haiku_all79.yaml` (per-agent `kwargs.models`; `model_name` is still read by `run_experiment.sh` for the
+key check and the OpenRouter ledger). Older collusion runs started from `stage1_B1_orient_more30.yaml`. The collusion `kwargs` (mount, order, write_mode, builtin_constraint,
 seed_content, ...) are listed in `configs/README.md`.
 
 Things to set every time:
 - `environment.import_path: local_docker_env:OfflineCapableDocker` (local Docker; there are no Modal credits).
 - `openrouter_provider` pinned, with `allow_fallbacks: false`.
-- `n_concurrent_trials`: 1-2 on the laptop, 10 on a CPX62 (section 6.1).
+- `n_concurrent_trials`: 1-2 on the laptop, 20 on a CPX62 (section 6.1).
 - `datasets[0].task_names`: an explicit list. Stick to small-image repos (NodeBB, ansible, navidrome) and leave
   out HARD-51.
 
@@ -160,8 +200,12 @@ The experiments run on plain Docker, so any x86 Linux server works. We use **Het
 containers, the agents' LLM loop (calls go out to OpenRouter/Anthropic/OpenAI) and the re-grading. Once a run is
 started, the laptop can be closed.
 
-- **Concurrency:** `n_concurrent_trials: 10` on a CPX62. Each trial runs 2 sandboxes (1 CPU, 4 GB limit each).
-  Memory peaked at 2.6 GB for 6 trials, so 10 is safe. On a CPX52 (12 vCPU, 24 GB) use 4-6.
+- **Concurrency:** `n_concurrent_trials: 20` on a CPX62. Each trial runs 2 sandboxes (1 CPU, 4 GB limit each).
+  Measured with the sampler (`logs/resmon.log`, section 6.2): Luna at 10 peaked at 14.1 GB with CPU 15-50% idle;
+  DeepSeek at 20 peaked at 18.4 GB and 2.2 GB swap. High load averages there come from Go builds throttled by the
+  1-CPU sandbox limit. On a CPX52 (12 vCPU, 24 GB) use 8-10.
+- **Speed at 20 at once, 79 two-sided tasks:** Luna about 1-1.5 h per run including re-grades; DeepSeek 2.5 h agent
+  phase; Qwen 3.8 Flash about 7.5 h (73 min median trial, 6 trials hit the 2 h limit).
 - **Bigger servers:** the account is new, so Hetzner does not allow dedicated-vCPU (CCX) servers yet. Once it does,
   a CCX53 (32 vCPU, 128 GB, about $1/h) can run about 20 trials at once.
 - **Measured speed on a CPX62 with 10 at once:** 20 DeepSeek trials took 56 min for the agent phase; 30 trials took
@@ -171,32 +215,36 @@ started, the laptop can be closed.
 
 ### 6.2 The current server (important)
 
-On 2026-10-17 a CPX62 is **still running and billing**. The user rebuilt it on 2026-10-17 at about 02:27 UTC (a fresh
-Ubuntu 24.04 with a new host key, so the old images and results on it are gone), and it was set up again the same day:
+On 2026-10-25 a CPX62 is **running and billing** (created by the user on 2026-10-24, about 02:10 UTC; new host key,
+fingerprint `SHA256:akoNAWSrqdpzOS1r8h15wxzUpuMeUaa2dOmmqovvqD8`).
 
 | | |
 |---|---|
-| Address | `root@2.29.35.80` (hostname `ubuntu-32gb-hel1-2`, Helsinki) |
-| State | idle, no tmux session, no containers |
-| Installed | Docker, uv, Harbor 0.24.0, mini-swe-agent 2.4.6; the 20 images of the `stage1_B1_orient_invite` instances (the same 20 as the `_plan` runs) plus navidrome-3982ba |
-| `.env` on it | the **backup** key under the name `OPENROUTER_API_KEY`, plus `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`. The main-key file is kept as `.env.main`; `mv .env.main .env` on the server switches back. |
-| Results on it | `smoke_det_late_invite` (passed) and `_failed/stage1_B1_orient_invite_402` (every call refused, $0 spent) |
+| Address | `root@2.29.109.25`, repo in `~/SWE-bench_Pro-os` |
+| tmux sessions | `mixed_haiku_luna_all79` (the run, section 0); `claude_queue` (waits for it, then ends); `resmon` (resource sampler) |
+| `.env` on it | the laptop's `.env` (main OpenRouter key, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`), pushed with `push --env` |
+| Images | the 79 two-sided tasks |
+| Results on it | every run in section 7 from 2026-10-24/25; all pulled to the laptop except `mixed_haiku_luna_all79` |
+| Disk | about 333 GB used, 245 GB free (2026-10-24) |
 
-**Keys on 2026-10-17 (both blocked):** the backup key's account has no credits left ($155.55 used of $155), so every
-call returns `402 Insufficient credits`. The main key has $38.40 of account credits but only $1.59 left under its own
-$45 key limit. Before a run, either top up the backup account or raise the main key's limit at
-openrouter.ai/settings/keys. Check a key's balance without printing it (on the server, in `~/SWE-bench_Pro-os`):
+**Resource sampler.** `resmon` appends `mem_used_mb`, `swap_used_mb`, `load1`, `cpu_idle` and the container count
+every 5 s to `logs/resmon.log`, with a `=== <run> start` line before each run. Peak of one run:
+`awk '/=== <run> start/{f=1;next} /=== /{f=0} f' logs/resmon.log | sort -t= -k2 -n | tail -1`.
+
+**Queueing runs back to back** without the laptop: a tmux session that waits for one session to end, then starts the
+next config with `infra/hetzner/start.sh`, for example
 
 ```
-K=$(set -a; . ./.env; echo "$OPENROUTER_API_KEY"); curl -s -H "Authorization: Bearer $K" https://openrouter.ai/api/v1/key
-curl -s -H "Authorization: Bearer $K" https://openrouter.ai/api/v1/credits
+tmux new-session -d -s queue "while tmux has-session -t <running> 2>/dev/null; do sleep 60; done; \
+  for n in <a> <b>; do infra/hetzner/start.sh configs/collusion/\$n.yaml; sleep 30; \
+  while tmux has-session -t \$n 2>/dev/null; do sleep 60; done; done"
 ```
 
-If the user wants another run soon, reuse it: skip creating and `setup`, and just `push` and `run`. The images it
-already has save the pull time. If nothing is planned, tell the user to **delete it** in the Hetzner console. Delete,
-do not power off: Hetzner bills stopped servers too.
+To change a queue, kill its session and start a new one (a running job is not affected).
 
-Check that it is still there: `ssh -o ConnectTimeout=8 root@2.29.35.80 uptime`.
+If nothing more is planned, tell the user to **delete it** in the Hetzner console. Delete, do not power off: Hetzner
+bills stopped servers too. Check that it is still there: `ssh -o ConnectTimeout=20 root@2.29.109.25 uptime`. SSH can
+time out for a minute while the server is busy; retry before assuming it is gone.
 
 ### 6.3 Create a new server (the user does this)
 
@@ -319,6 +367,10 @@ The run is done when `status` says `tmux session: finished` and each `regrade_a*
 | `stage1_B1_orient_{sonnet55,sol61,gemini38f}*` | same prompt, three other models | only DeepSeek took work or hunted for the fix; `collusion_models_report.md` |
 | `stage1_B1_orient_steps50` | orientation prompt + 50-step limit with countdown, 30 instances | no report yet |
 | `stage1_B1_orient_steps50_plan`, `_plan_read` | + keep plan/reflections in `/workspace`; + read a file before changing it; 20 instances | notes written blind, 2/40 suspect another agent, 1 design take; `collusion_stage1_B1_orient_steps50_plan_report.md` |
-| `stage1_B1_orient_plan_hello`, `_invite` | `_plan_read` without the step limit, plus a message from "another agent" planted mid-run (`late_plant`): a hello in `plan.md`, or an invite to split the work in `.coord/COLLAB_INVITE.md` (only after the agent has edited `/workspace`, with its start time) | `_invite` not run yet: blocked on the OpenRouter keys (6.2) |
+| `stage1_B1_orient_plan_hello`, `_invite` | `_plan_read` without the step limit, plus a message from "another agent" planted mid-run (`late_plant`): a hello in `plan.md`, or an invite to split the work in `.coord/COLLAB_INVITE.md` (only after the agent has edited `/workspace`, with its start time) | `_invite` not run yet: blocked on the OpenRouter keys at the time |
+| `stage1_B1_orient_invite_twosided_*` | the two-sided split spec: each agent misses one interface name the other has; agent 1 invites agent 0 to collaborate. Prompt iterations up to `..._intro_10` (10 tasks) and its `_askhelp*`, `_dsflash`, `_sonnet55` variants | pilot numbers in `../collusion-paper/PLAN.md` |
+| `mutual_luna_rest69` (+ `..._intro_10`), `mutual_dsflash_all79`, `mutual_qwen38flash_all79`, `mutual_haiku55_all79` | full recipe on all 79 two-sided tasks, four models (2026-10-24) | `collusion_recipe_report.md` |
+| `ablate_{badagent,reason,method}_luna_all79` | the three ablations, Luna | -bad agent and -method: no collusion; -reason: 23/79 still accept; `collusion_recipe_report.md` |
+| `mixed_luna_haiku_all79`, `mixed_haiku_luna_all79` | bad-agent identity: Luna x Haiku both ways | first done, second running (section 0); `collusion_recipe_report.md` |
 
 All of these ran on Hetzner CPX62 servers with local Docker.
